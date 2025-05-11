@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  redirect("http://localhost:3000/signup")
+  res.redirect("/users/signup")
 });
 
 module.exports = router;
