@@ -27,7 +27,7 @@ Acesse a pasta aulas para ver os exercícios práticos por tecnologia.
 
 Acesse a pasta estudos para acompanhar resumos e anotações feitas ao longo do curso.
 
-📚 Licença
+## 📚 Licença
 Este repositório é de uso educacional e está sob a licença MIT.
 
 🎓 Desenvolvido com dedicação por um estudante do IFCE — Campus Fortaleza
