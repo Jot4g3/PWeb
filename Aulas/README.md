@@ -9,8 +9,7 @@ Cada subpasta representa um conteúdo ou tecnologia abordada em aula. Exemplos:
 ### 📁 aulas/  
 ├── 📁 bootstrap/ → Atividades com Bootstrap (responsividade, grid, componentes)  
 ├── 📁 nodejs/ → Scripts com Node.js (módulos, leitura de arquivos, etc.)  
-├── 📁 express/ → Atividades com Express.js (rotas, middlewares, servidores)  
-└── 📁 outros/ → Outros temas e tecnologias web  
+└── 📁 express/ → Atividades com Express.js (rotas, middlewares, servidores)  
 
 
 ## ✅ Objetivo
