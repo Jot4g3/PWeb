@@ -21,7 +21,7 @@ Nesta disciplina, aprendemos a construir aplicações web utilizando tecnologias
 1. Clone o repositório:
 
 ```bash
-git clone https://github.com/seu-usuario/programacao-web.git
+git clone https://github.com/Jot4g3/PWeb.git
 ```
 Acesse a pasta aulas para ver os exercícios práticos por tecnologia.
 
