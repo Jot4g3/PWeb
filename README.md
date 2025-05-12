@@ -5,13 +5,8 @@ Repositório criado para armazenar atividades e conteúdos da disciplina [**Prog
 ## 📁 Estrutura do Repositório
 
 📦 programacao-web/
-├── 📁 aulas/ # Atividades práticas separadas por tema
-│ ├── bootstrap/
-│ ├── nodejs/
-│ ├── express/
-│ └── ...
-├── 📁 estudos/ # Anotações, resumos e conteúdos de apoio
-└── README.md
+📁 aulas/ # Atividades práticas separadas por tema
+📁 estudos/ # Anotações, resumos e conteúdos de apoio
 
 ## 🧑‍🏫 Sobre
 
