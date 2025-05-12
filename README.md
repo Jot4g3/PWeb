@@ -5,8 +5,10 @@ Repositório criado para armazenar atividades e conteúdos da disciplina [**Prog
 ## 📁 Estrutura do Repositório
 
 📦 programacao-web
-  📁 aulas/ # Atividades práticas separadas por tema
-  📁 estudos/ # Anotações, resumos e conteúdos de apoio
+  # Atividades práticas separadas por tema
+  📁 aulas
+  # Anotações, resumos e conteúdos de apoio
+  📁 estudos
 
 ## 🧑‍🏫 Sobre
 
