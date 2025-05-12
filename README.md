@@ -22,6 +22,7 @@ Nesta disciplina, aprendemos a construir aplicações web utilizando tecnologias
 
 ```bash
 git clone https://github.com/seu-usuario/programacao-web.git
+```
 Acesse a pasta aulas para ver os exercícios práticos por tecnologia.
 
 Acesse a pasta estudos para acompanhar resumos e anotações feitas ao longo do curso.
