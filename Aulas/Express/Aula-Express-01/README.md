@@ -47,7 +47,9 @@ node app.js
 ```
 
 4. Acesse no navegador:
-`http://localhost:3000`  
+```
+http://localhost:3000
+````  
 
 ✍️ Desenvolvido como parte do conteúdo de Express.js — Programação Web  
 📅 Semestre 2025.1 — IFCE Fortaleza  
