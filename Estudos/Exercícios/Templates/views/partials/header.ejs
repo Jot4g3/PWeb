@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>Express Templates</title>
+
+   <!-- CSS link (loading Semantic UI from a CDN) -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css" integrity="sha512-8bHTC73gkZ7rZ7vpqUQThUDhqcNFyYi2xgDgPDHc+GXVGHXq+xPjynxIopALmOPqzo9JZj0k6OqqewdGO3EsrQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+   <style>
+      body {
+        padding: 50px;
+        font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+      }
+
+      a {
+        color: #ff9500;
+      }
+
+      #sign{
+        display: flex;
+        justify-content: end;
+        align-items: top;
+        padding: 15px;
+      }
+   </style>
+</head>
+
+<body class="container">
+
+  <div id="sign">
+    <a href="/signin" class="">Sign In</a>
+    <a href="/signup">Sign Up</a>
+  </div>
+
+<header>
+   <div class="ui inverted menu">
+       <a class="item" href="/">
+         Home
+       </a>
+       <a class="item" href="/about">
+         About
+       </a>
+   </div>
+</header>

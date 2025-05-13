@@ -1,0 +1,15 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #ff9500;
+}
+
+#sign{
+  display: flex;
+  justify-content: end;
+  align-items: top;
+  padding: 15px;
+}
