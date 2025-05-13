@@ -4,7 +4,7 @@ Repositório criado para armazenar atividades e conteúdos da disciplina [**Prog
 
 ## 📁 Estrutura do Repositório
 
-### 📦 programacao-web
+### 📦 PWeb
 Neste repositório você vai encontrar duas pastas - Aulas (com atividades) e Estudos (com anotações).
 
 ## 🧑‍🏫 Sobre
