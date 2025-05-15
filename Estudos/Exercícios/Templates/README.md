@@ -45,7 +45,7 @@ npm install
 
 3. Execute a aplicação:
 ```bash
-node start
+npx nodemon
 ```
 
 4. Acesse no navegador:
