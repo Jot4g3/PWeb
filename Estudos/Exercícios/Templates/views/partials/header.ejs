@@ -1,45 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-   <meta charset="UTF-8">
-   <title>Express Templates</title>
+  <meta charset="UTF-8">
+  <title>Express Templates</title>
+  <!-- CSS link (loading Semantic UI from a CDN) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"
+    integrity="sha512-8bHTC73gkZ7rZ7vpqUQThUDhqcNFyYi2xgDgPDHc+GXVGHXq+xPjynxIopALmOPqzo9JZj0k6OqqewdGO3EsrQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Utilizando /stylesheet em vez de /public/stylesheet porque o Express utiliza a pasta public como raiz! -->
+  <link rel="stylesheet" href="/stylesheets/style.css" />
+  <!--OBS.: Todos os scripts devem estar na pasta /public/js!-->
+  <% if (scriptName) { %>
+    <script src="/js/<%= scriptName %>.js" defer></script>
+  <% } %>
+  <!--Coloquei esse link de script, veja o uso dele lá em /public/js/signin.js.-->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-   <!-- CSS link (loading Semantic UI from a CDN) -->
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css" integrity="sha512-8bHTC73gkZ7rZ7vpqUQThUDhqcNFyYi2xgDgPDHc+GXVGHXq+xPjynxIopALmOPqzo9JZj0k6OqqewdGO3EsrQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-   <style>
-      body {
-        padding: 50px;
-        font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-      }
-
-      a {
-        color: #ff9500;
-      }
-
-      #sign{
-        display: flex;
-        justify-content: end;
-        align-items: top;
-        padding: 15px;
-      }
-   </style>
 </head>
+
 
 <body class="container">
 
   <div id="sign">
-    <a href="/signin" class="">Sign In</a>
-    <a href="/signup">Sign Up</a>
+    <a href="/users/signin" class="ui button primary">Sign In</a>
+    <a href="/users/signup" class="ui button">Sign Up</a>
   </div>
 
-<header>
-   <div class="ui inverted menu">
-       <a class="item" href="/">
-         Home
-       </a>
-       <a class="item" href="/about">
-         About
-       </a>
-   </div>
-</header>
+
+  <header>
+    <div class="ui inverted menu">
+      <a class="item" href="/">
+        Home
+      </a>
+      <a class="item" href="/about">
+        About
+      </a>
+    </div>
+  </header>
