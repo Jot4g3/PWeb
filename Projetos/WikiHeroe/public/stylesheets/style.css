@@ -1,0 +1,41 @@
+body {
+  padding: 0px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #ffffff !important;
+}
+
+main{
+  padding: 50px !important;
+}
+
+#border-orange-800{
+  border-width: 2px;
+  border-style: solid;
+  border-color: #653208;
+  border-radius: 50px;
+  background-color: rgba(101, 50, 8, 0.2);
+}
+
+.orange-100{
+  background-color: rgb(255 229 208);
+}
+
+.orange-300{
+  background-color: rgb(254 178 114)
+}
+
+.title{
+  font-family: Georgia, sefif;
+}
+
+.paragraph{
+  font-family: 'Inter', sans-serif;
+}
+
+#sidebar{
+  padding: 0;
+  background-color: #653208;
+}
