@@ -13,6 +13,8 @@ var aboutSiteRouter = require('./routes/about/site');
 
 const { title } = require('process');
 
+const allCharactersData = require('./data/characters.json')
+
 var app = express();
 
 // view engine setup
@@ -26,6 +28,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use((req,res,next)=>{
+  res.locals.charactersList = allCharactersData
+  res.locals.selected = "none"
+  next();
+})
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
