@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %></title>
   <link rel="stylesheet" href="/stylesheets/style.css">
   <link href="/stylesheets/navbar.css" rel="stylesheet">
@@ -17,8 +18,8 @@
   <div class="container-fluid">
     <div class="row">
       <%- include('./partials/sidebar', {charactersList: charactersList}) %>
-      <main class="col-10 flex-fill min-vh-100"> <!-- Colocando min-vh-100 aqui, a sidebar fica em toda a extensão da página-->
-        <%- body %> <!-- Aqui o conteúdo de index.ejs será inserido --> <!--npm install express-ejs-layouts-->
+      <main class="col-12 col-md-10 order-1 order-md-2 flex-fill min-vh-100">
+        <%- body %>
       </main>
     </div>
   </div>
