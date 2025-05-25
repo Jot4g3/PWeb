@@ -17,7 +17,7 @@
   <div class="container-fluid">
     <div class="row">
       <%- include('./partials/sidebar') %>
-      <main class="col-10 flex-fill">
+      <main class="col-10 flex-fill min-vh-100"> <!-- Colocando min-vh-100 aqui, a sidebar fica em toda a extensão da página-->
         <%- body %> <!-- Aqui o conteúdo de index.ejs será inserido --> <!--npm install express-ejs-layouts-->
       </main>
     </div>

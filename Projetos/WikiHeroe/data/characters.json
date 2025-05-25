@@ -1,0 +1,18 @@
+[
+  {
+    "id": "moises",
+    "nameCharacter": "Moisés",
+    "shortDescriptionCharacter": "Líder hebreu que tirou o povo de Israel do Egito.",
+    "longDescriptionCharacter": "Moisés foi um dos mais importantes profetas e líderes da história do povo de Israel. Ele nasceu no Egito em meio à escravidão e foi resgatado das águas do Nilo pela filha do faraó...",
+    "historyCharacter": "As principais histórias de Moisés incluem o seu nascimento e resgate, a sarça ardente e o chamado de Deus, as Dez Pragas do Egito, a abertura do Mar Vermelho, a entrega dos Dez Mandamentos no Monte Sinai...",
+    "bibleCharacter": "Êxodo 2-40, Levítico, Números, Deuteronômio."
+  },
+  {
+    "id": "abraao",
+    "nameCharacter": "Abraão",
+    "shortDescriptionCharacter": "Pai da fé e patriarca das três grandes religiões monoteístas.",
+    "longDescriptionCharacter": "Abraão, cujo nome original era Abrão, é uma figura central no judaísmo, cristianismo e islamismo. Ele foi chamado por Deus para deixar sua terra natal e ir para uma terra que Deus lhe mostraria...",
+    "historyCharacter": "A chamada de Abraão e sua jornada para Canaã, a promessa de um filho (Isaque) na velhice, o teste de sacrifício de Isaque, a aliança de Deus com Abraão...",
+    "bibleCharacter": "Gênesis 12-25."
+  }
+]
