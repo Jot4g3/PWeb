@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+
 const path = require('path');
 const fs = require('fs'); // Para ler o arquivo JSON
 

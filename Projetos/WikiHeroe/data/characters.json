@@ -1,13 +1,5 @@
 [
   {
-    "id": "jesuscristo",
-    "nameCharacter": "Jesus Cristo",
-    "shortDescriptionCharacter": "O Filho de Deus, Salvador e Messias prometido, figura central do cristianismo.",
-    "longDescriptionCharacter": "Jesus Cristo é a figura central da fé cristã, reconhecido pelos cristãos como o Filho de Deus e o Messias prometido nas Escrituras do Antigo Testamento. Nascido em Belém por volta do ano 4-6 a.C., Jesus cresceu em Nazaré e iniciou seu ministério público aos cerca de 30 anos. Ele pregou por aproximadamente três anos, realizando milagres, ensinando sobre o Reino de Deus e chamando discípulos. Sua mensagem central era o amor, o perdão e a salvação. Jesus foi crucificado em Jerusalém sob o governo de Pôncio Pilatos, mas segundo a fé cristã, ressuscitou ao terceiro dia, vencendo a morte e oferecendo salvação eterna a toda humanidade. Sua vida, morte e ressurreição são os fundamentos da fé cristã.",
-    "historyCharacter": "As principais histórias de Jesus incluem: o nascimento virginal em Belém, a visita dos magos e pastores, a fuga para o Egito, a infância em Nazaré, o batismo no rio Jordão por João Batista, as tentações no deserto, a escolha dos doze apóstulos, o Sermão da Montanha, os milagres de cura e ressurreição, as parábolas sobre o Reino de Deus, a multiplicação dos pães e peixes, a transfiguração no monte, a entrada triunfal em Jerusalém, a última ceia com os discípulos, a oração no Getsêmani, a traição de Judas, o julgamento diante de Pilatos e do Sinédrio, a crucificação no Calvário, a morte e sepultamento, a ressurreição no terceiro dia, as aparições aos discípulos e a ascensão aos céus.",
-    "bibleCharacter": "Mateus, Marcos, Lucas, João (todo o Novo Testamento fala sobre Ele)."
-  },
-  {
     "id": "jesus",
     "nameCharacter": "Jesus Cristo",
     "shortDescriptionCharacter": "O Filho de Deus, Salvador e Messias prometido, figura central do cristianismo.",
