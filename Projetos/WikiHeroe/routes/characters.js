@@ -18,6 +18,17 @@ try {
 
 /* GET home page. */
 
+/* Rota para a lista de personagens (URL: /characters) */
+router.get('/', function (req, res, next){
+  res.render('characters_list', 
+    
+    {
+      title: 'Lista de Personagens'
+    }
+
+  );
+});
+
 // Pegando o id do personagem pela rota.
 router.get('/:id', function (req, res, next) {
 
