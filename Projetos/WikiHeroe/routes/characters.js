@@ -3,7 +3,6 @@ var router = express.Router();
 const path = require('path');
 const fs = require('fs'); // Para ler o arquivo JSON
 
-
 const charactersFilePath = path.join(__dirname, '../data', 'characters.json');
 let allCharactersData = [];
 
@@ -32,7 +31,8 @@ router.get('/', function (req, res, next){
 // Pegando o id do personagem pela rota.
 router.get('/:id', function (req, res, next) {
 
-  const characterId = req.params.id;
+  let characterId = req.params.id;
+  characterId = formatText(characterId);
   // Filtrando a lista de personagens e pegando só o personagem em questão.
   const character = allCharactersData.find(char => char.id === characterId);
 
@@ -57,5 +57,13 @@ router.get('/:id', function (req, res, next) {
   }
 
 });
+
+function formatText(str) {
+  return str
+    .normalize("NFD") // Decompor caracteres acentuados em seus componentes base e diacríticos
+    .replace(/[\u0300-\u036f]/g, "") // Remover os diacríticos (acentos)
+    .toLowerCase() // Converter para minúsculas
+    .replace(/[^a-z0-9\s]/g, ""); // Remover símbolos, mantendo apenas letras, números e espaços
+}
 
 module.exports = router;
