@@ -6,7 +6,6 @@ var logger = require('morgan');
 const expressLayouts = require('express-ejs-layouts');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 var charactersRouter = require('./routes/characters');
 var aboutMeRouter = require('./routes/about/me');
 var aboutSiteRouter = require('./routes/about/site');
@@ -36,7 +35,6 @@ app.use((req,res,next)=>{
 })
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/characters', charactersRouter);
 app.use('/about/me', aboutMeRouter);
 app.use('/about/site', aboutSiteRouter);
