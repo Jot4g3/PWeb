@@ -39,3 +39,8 @@ main{
   padding: 0;
   background-color: #653208;
 }
+
+#imgCharacter{
+  border: #653208 solid 2px;
+  border-radius: 2px;
+}

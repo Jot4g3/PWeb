@@ -18,7 +18,7 @@ router.get('/', function (req, res, next){
 
 // Pegando o id do personagem pela rota.
 router.get('/:id', function (req, res, next) {
-
+  // Pega o id do personagem.
   let characterId = req.params.id;
   characterId = formatText(characterId);
   // Filtrando a lista de personagens e pegando só o personagem em questão.
@@ -35,7 +35,8 @@ router.get('/:id', function (req, res, next) {
       shortDescriptionCharacter: character.shortDescriptionCharacter,
       longDescriptionCharacter: character.longDescriptionCharacter,
       historyCharacter: character.historyCharacter,
-      bibleCharacter: character.bibleCharacter
+      bibleCharacter: character.bibleCharacter,
+      imgsrc: character.imgsrc
     }
     
     );
