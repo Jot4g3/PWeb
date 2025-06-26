@@ -1,0 +1,13 @@
+<%- include('partials/header.ejs') %>
+
+<div class="d-flex justify-content-start align-items-center bg-light rounded shadow w-75" style="height: 200px">
+    <div class="d-flex flex-column p-3 w-100">
+        <div class="d-flex flex-row justify-content-between">
+            <h2>Mensagem do Dia</h2>
+            <h2><%= new Date().toLocaleDateString() %></h2>
+        </div>
+        <h5 style="font-family: 'Libertinus Math', system-ui;"> <%= msg %> </h5>
+    </div>
+</div>
+
+<%- include('partials/footer.ejs') %>
