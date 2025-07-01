@@ -1,0 +1,26 @@
+<%- include('partials/header.ejs') %>
+    <div class="d-flex vh-100 justify-content-center align-items-center">
+        <div id="carouselExample" class="carousel slide rounded shadow" style="height: 300px; width: 500px;">
+        <div class="carousel-inner" style="height: 300px; width: 500px;">
+            <% for( let index = 0; index < data.length; index++ ) { %>
+                <div class="carousel-item <%= index == 0 ? "active" : "" %>">
+                    <img src="<%= data[index].hdurl %>" class="d-block w-100" alt="<%= data[index].title %>">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h5><%= data[index].title %></h5>
+                      </div>
+                </div>
+            <% } %>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+    </div>
+    
+
+<%- include('partials/footer.ejs') %>
