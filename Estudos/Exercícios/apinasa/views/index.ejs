@@ -1,38 +1,46 @@
 <%- include('partials/header.ejs') %>
 
-<div class="d-flex vh-100 justify-content-center align-items-center">
+<div class="row align-items-center m-4 p-4">
+    <form method="GET" action="/">
+        <h1>Digite o astro desejado!</h1>
+        <div class="mb-3"> 
+            <input type="text" class="form-control" name="astro" placeholder="Moon" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Pesquisar</button>
+    </form>
 
-    <div class="d-flex align-items-center gap-4">
+    <div class="col">
+        <div class="d-flex vh-100 justify-content-center align-items-center">
+            <div class="d-flex align-items-center gap-4">
+                <a href="#carouselExample" role="button" data-bs-slide="prev"
+                    class="text-decoration-none text-dark m-5">
+                    <h1 class="fw-light">&lt;</h1>
+                </a>
+                <div id="carouselExample" class="carousel slide rounded shadow p-4"
+                    style="width: 600px; background-color: rgba(31, 53, 150, 0.281);">
 
-        <a href="#carouselExample" role="button" data-bs-slide="prev" class="text-decoration-none text-dark m-5">
-            <h1 class="fw-light">&lt;</h1>
-        </a>
+                    <div class="carousel-inner">
+                        <% for( let index=0; index < data.length; index++ ) { %>
+                            <div class="carousel-item<%= index == 0 ? ' active' : '' %>">
 
-        <div id="carouselExample" class="carousel slide rounded shadow p-4"
-             style="width: 600px; background-color: rgba(31, 53, 150, 0.281);">
-            
-            <div class="carousel-inner">
-                <% for( let index = 0; index < data.length; index++ ) { %>
-                    <div class="carousel-item<%= index == 0 ? ' active' : '' %>">
-                        
-                        <img src="<%= data[index].url %>" class="d-block w-100" alt="<%= data[index].title %>">
-                        
-                        <div class="text-center mt-3">
-                            <h5 class="p-3 text-white">
-                                <%= data[index].title %>
-                            </h5>
-                        </div>
+                                <img src="<%= data[index].url %>" class="d-block w-100" alt="<%= data[index].title %>" onerror="handleImageError(this)">
 
+                                <div class="text-center mt-3">
+                                    <h5 class="p-3 text-white">
+                                        <%= data[index].title %>
+                                    </h5>
+                                </div>
+
+                            </div>
+                            <% } %>
                     </div>
-                <% } %>
+                </div>
+                <a href="#carouselExample" role="button" data-bs-slide="next"
+                    class="text-decoration-none text-dark m-5">
+                    <h1 class="fw-light">&gt;</h1>
+                </a>
             </div>
-
-            </div>
-
-        <a href="#carouselExample" role="button" data-bs-slide="next" class="text-decoration-none text-dark m-5">
-            <h1 class="fw-light">&gt;</h1>
-        </a>
-
+        </div>
     </div>
 </div>
 
