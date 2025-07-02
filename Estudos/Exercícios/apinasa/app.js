@@ -51,28 +51,45 @@ app.listen(PORT, () => {
 
 // Função para caso a img não carregue. By Geminy.
 function handleImageError(imageElement) {
-  console.warn("Imagem falhou ao carregar. Removendo item do carrossel.", imageElement.src);
+  console.error(`Imagem falhou ao carregar: ${imageElement.src}. Removendo item.`);
 
-  // 1. Encontra o elemento 'carousel-item' mais próximo da imagem que falhou.
   const itemToRemove = imageElement.closest('.carousel-item');
+  const carousel = document.getElementById('carouselExample');
 
-  if (itemToRemove) {
-    // 2. Verifica se o item a ser removido é o que está 'ativo'.
-    if (itemToRemove.classList.contains('active')) {
-      // Se for, passa a classe 'active' para o próximo item.
-      const nextItem = itemToRemove.nextElementSibling;
-      if (nextItem) {
-        nextItem.classList.add('active');
-      } else {
-        // Se não houver próximo (era o último), tenta ativar o primeiro.
-        const parent = itemToRemove.parentElement;
-        if (parent && parent.firstElementChild) {
-          parent.firstElementChild.classList.add('active');
-        }
-      }
+  // Se não encontrar os elementos necessários, interrompe a função.
+  if (!itemToRemove || !carousel) {
+    return;
+  }
+
+  const isItemActive = itemToRemove.classList.contains('active');
+
+  // Se o item a ser removido estiver ativo, precisamos encontrar um substituto.
+  if (isItemActive) {
+    // Tenta pegar o próximo item na lista.
+    let nextActiveItem = itemToRemove.nextElementSibling;
+
+    // Se não houver próximo (era o último), o "próximo" é o primeiro da lista.
+    if (!nextActiveItem) {
+      nextActiveItem = carousel.querySelector('.carousel-item:first-child');
     }
 
-    // 3. Remove o item com a imagem quebrada do carrossel.
-    itemToRemove.remove();
+    // Ativa o novo item, mas só se ele não for o próprio item que estamos removendo.
+    if (nextActiveItem && nextActiveItem !== itemToRemove) {
+      nextActiveItem.classList.add('active');
+    }
+  }
+
+  // Finalmente, remove o item com a imagem quebrada.
+  itemToRemove.remove();
+
+  // BÔNUS: Verifica se o carrossel ficou vazio.
+  const remainingItems = carousel.querySelectorAll('.carousel-item').length;
+  if (remainingItems === 0) {
+    console.warn("O carrossel está vazio. Escondendo o componente.");
+    // Encontra o container principal (incluindo as setas) e o esconde.
+    const carouselContainer = carousel.closest('.d-flex.align-items-center.gap-4');
+    if (carouselContainer) {
+      carouselContainer.style.display = 'none';
+    }
   }
 }
