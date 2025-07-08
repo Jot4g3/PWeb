@@ -15,9 +15,9 @@ app.set("view engine", "ejs")
 
 app.use(express.urlencoded({extended: true}))
 
-app.get("/", (req, res) => {
+/*app.get("/", (req, res) => {
     res.render("index")
-})
+})*/
 
 app.post("/books", async (req, res) => {
     const book = req.body
@@ -33,10 +33,25 @@ app.post("/books", async (req, res) => {
 
     // Enviando pro DB
     const result = await BooksDAO.insertBook(db, doc)
-    res.json(result)
     console.log(book)
+})
+
+app.get("/", async (req, res) => {
+    const books = await BooksDAO.getAllBooks(db)
+
+    res.render("index", {books: books})
+})
+
+app.post("/books/delete/:id", async (req, res) => {
+    const id = req.params.id
+
+    const result = await BooksDAO.deleteBookById(db, id)
+    console.log(result)
+
+    res.redirect(`/`)
 })
 
 app.listen(PORT, () => {
     console.log(`Running at port ${PORT}...`)
 })
+
