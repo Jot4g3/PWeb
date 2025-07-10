@@ -1,0 +1,62 @@
+<%- include('partials/header.ejs') %>
+
+    <div class="container mt-5">
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Editar Livro</h2>
+                    </div>
+                    <div class="card-body">
+                        <form action="/books/update/<%= book._id %>" method="POST">
+
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Título do Livro:</label>
+                                <input type="text" class="form-control" id="titulo" name="title"
+                                    value="<%= book.title %>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="author" class="form-label">Autor:</label>
+                                <input type="text" class="form-control" id="autor" name="author"
+                                    value="<%= book.author %>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="bookpublisher" class="form-label">Editora:</label>
+                                <input type="text" class="form-control" id="editora" name="bookpublisher"
+                                    value="<%= book.bookpublisher %>" required>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="year" class="form-label">Ano de Publicação:</label>
+                                    <input type="number" class="form-control" id="ano" name="year"
+                                        value="<%= book.year %>" required min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="quantity" class="form-label">Quantidade em Estoque:</label>
+                                    <input type="number" class="form-control" id="quant" name="quantity"
+                                        value="<%= book.quantity %>" required min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="price" class="form-label">Preço (R$):</label>
+                                    <input type="number" class="form-control" id="preco" name="price"
+                                        value="<%= book.price %>" step="0.01" required min="0">
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <button type="submit" class="btn btn-primary">Atualizar Livro</button>
+                            
+                            <a href="/" class="btn btn-secondary">Cancelar</a>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer.ejs') %>
