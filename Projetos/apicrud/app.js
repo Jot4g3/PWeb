@@ -32,8 +32,8 @@ app.use(session({
     resave: false,
     saveUninitialized: false, // Alterado para false, melhor prática para login
     cookie: {
-        secure: false, 
-        maxAge: 1000 * 60 * 60 * 24 
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24
     }
 }));
 app.use(flash());
@@ -42,7 +42,7 @@ app.use(flash());
 app.use((req, res, next) => {
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
-    res.locals.session = req.session; 
+    res.locals.session = req.session;
     next();
 });
 
@@ -71,16 +71,16 @@ async function main() {
                 let userReservations = new Set(); // Inicia como um Set vazio
 
                 if (req.session.isLoggedIn) {
-                    const reservations = await reservationsCollection.find({ 
-                        userId: new ObjectId(req.session.userId) 
+                    const reservations = await reservationsCollection.find({
+                        userId: new ObjectId(req.session.userId)
                     }).toArray();
                     userReservations = new Set(reservations.map(r => r.bookId.toString()));
                 }
 
                 res.render('index', {
                     books: books,
-                    userReservations: userReservations
-                    // isLoggedIn e isLibrarian já estão disponíveis via res.locals.session
+                    isLoggedIn: req.session.isLoggedIn || false, // Redundante!
+                    isLibrarian: req.session.isLibrarian || false // Redundante!
                 });
             } catch (err) {
                 console.log("Erro ao buscar livros para a página inicial:", err);
@@ -183,7 +183,7 @@ async function main() {
                 };
                 await ReservationsDAO.createReservation(reservationsCollection, reservationDoc);
                 await BooksDAO.updateBookById(booksCollection, bookId, { $inc: { qttReserved: 1 } });
-                
+
                 req.flash('success_msg', 'Livro reservado com sucesso!');
                 res.redirect('/');
             } catch (err) {
@@ -198,7 +198,7 @@ async function main() {
 
         app.post("/register", async (req, res) => {
             const { name, email, password, passwordConfirm } = req.body;
-            const isLibrarian = req.body.isLibrarian === 'on'; 
+            const isLibrarian = req.body.isLibrarian === 'on';
 
             if (!name || !email || !password || !passwordConfirm) {
                 req.flash('error_msg', 'Todos os campos são obrigatórios.');
@@ -244,7 +244,7 @@ async function main() {
             req.session.userId = user._id;
             req.session.userName = user.name;
             req.session.isLibrarian = user.isLibrarian;
-            
+
             res.redirect('/');
         });
 
