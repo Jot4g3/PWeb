@@ -11,6 +11,7 @@ const PORT = process.env.PORT
 const { MongoClient } = require("mongodb");
 const BooksDAO = require("./dao/booksDAO");
 const UsersDAO = require("./dao/usersDAO");
+const    = require("./dao/usersDAO");
 const client = new MongoClient(URI);
 const booksCollection = client.db('library').collection('books');
 const usersCollection = client.db('library').collection('users');
@@ -26,7 +27,7 @@ const session = require('express-session');
 // MIDLERARES
 
 app.use(session({
-    secret: 'Mateus633MasbuscaiprimeirooreinodeDeuseasuajusticaetodasestascoisasvosseraoacrescentadas',
+    secret: 'JesusCristoOSalvador',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -42,11 +43,29 @@ app.use((req, res, next) => {
 
 // ROTAS
 
-app.get("/", async (req, res) => {
-    const books = await BooksDAO.getAllBooks(booksCollection)
+// Dentro do seu arquivo de rotas (ex: app.js ou routes/bookRoutes.js)
+app.get('/', async (req, res) => {
+    try {
+        // 1. Chame seu DAO para buscar TODOS os livros (usando o novo método com aggregation)
+        const books = await BooksDAO.getAllBooks(booksCollection);
 
-    res.render("index", { books: books })
-})
+        // 2. Renderize a página, passando TODAS as variáveis que o EJS precisa
+        res.render('index', {
+            books: books, // A variável que estava faltando
+            isLoggedIn: req.session.isLoggedIn || false,
+            isLibrarian: req.session.isLibrarian || false
+        });
+
+    } catch (err) {
+        console.log("Erro ao buscar livros para a página inicial:", err);
+        // Renderiza a página mesmo em caso de erro, mas com uma lista vazia
+        res.render('index', {
+            books: [],
+            isLoggedIn: req.session.isLoggedIn || false,
+            isLibrarian: req.session.isLibrarian || false
+        });
+    }
+});
 
 app.post("/books", async (req, res) => {
     const book = req.body
@@ -57,7 +76,8 @@ app.post("/books", async (req, res) => {
         "bookpublisher": book.bookpublisher,
         "year": book.year,
         "quantity": book.quantity,
-        "price": book.price
+        "price": book.price,
+        "createdBy": new ObjectId(req.ression.userId)   
     }
 
     // Enviando pro DB
@@ -92,8 +112,9 @@ app.post("/books/update/:id", async (req, res) => {
         "author": book.author,
         "bookpublisher": book.bookpublisher,
         "year": book.year,
-        "quantity": book.quantity,
-        "price": book.price
+        "quantity": parseInt(book.quantity),
+        "price": book.price,
+        "qttReserved": 0
     }
 
     const result = await BooksDAO.updateBookById(booksCollection, id, doc)
@@ -107,6 +128,7 @@ app.get("/register", (req, res) => {
 
 app.post("/register", async (req, res) => {
     const { name, email, password, passwordConfirm } = req.body;
+    const isLibrarian = req.body.isLibrarian === 'on'; 
 
     if (!name || !email || !password || !passwordConfirm) {
         return res.render('register', { error: 'Todos os campos são obrigatórios.' });
@@ -127,7 +149,8 @@ app.post("/register", async (req, res) => {
     const newUser = {
         name: name,
         email: email,
-        password: hashedPassword
+        password: hashedPassword,
+        isLibrarian: isLibrarian
     };
 
     await UsersDAO.insertUser(usersCollection, newUser);
@@ -163,6 +186,7 @@ app.post('/login', async (req, res) => {
         req.session.isLoggedIn = true;
         req.session.userId = user._id;
         req.session.userName = user.name;
+        req.session.isLibrarian = user.isLibrarian;
 
         // 6. Redireciona para a página principal
         res.redirect('/');
@@ -185,6 +209,24 @@ app.get('/logout', (req, res) => {
         res.locals = {};
     });
 });
+
+app.post("/books/reserve/:id", async (req, res) => {
+    const book = await BooksDAO.getBookById(booksCollection, req.params.id)
+
+    const doc = {
+        "title": book.title,
+        "author": book.author,
+        "bookpublisher": book.bookpublisher,
+        "year": book.year,
+        "quantity": parseInt(book.quantity),
+        "price": book.price,
+        "qttReserved": book.qttReserved + 1
+    }
+
+    BooksDAO.updateBookById(booksCollection, book._id, doc)
+})
+
+
 
 // LISTENING
 

@@ -1,107 +1,119 @@
 <%- include('partials/header.ejs') %>
 
-  <div class="container mt-5">
-    <div class="row mb-5">
-      <div class="col-12">
-        <div class="card">
+<div class="container mt-5">
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="card">
+        <% if (isLoggedIn && isLibrarian) { %>
           <div class="card-header">
             <h2>Cadastro de Novo Livro</h2>
           </div>
           <div class="card-body">
             <form action="/books" method="POST">
-
               <div class="mb-3">
                 <label for="title" class="form-label">Título do Livro:</label>
-                <input type="text" class="form-control" id="titulo" name="title" placeholder="Ex: O Senhor dos Anéis"
-                  required>
+                <input type="text" class="form-control" id="titulo" name="title" placeholder="Ex: O Senhor dos Anéis" required>
               </div>
-
               <div class="mb-3">
                 <label for="author" class="form-label">Autor:</label>
-                <input type="text" class="form-control" id="autor" name="author" placeholder="Ex: J.R.R. Tolkien"
-                  required>
+                <input type="text" class="form-control" id="autor" name="author" placeholder="Ex: J.R.R. Tolkien" required>
               </div>
-
               <div class="mb-3">
                 <label for="bookpublisher" class="form-label">Editora:</label>
-                <input type="text" class="form-control" id="editora" name="bookpublisher"
-                  placeholder="Ex: HarperCollins" required>
+                <input type="text" class="form-control" id="editora" name="bookpublisher" placeholder="Ex: HarperCollins" required>
               </div>
-
               <div class="row">
                 <div class="col-md-4 mb-3">
                   <label for="year" class="form-label">Ano de Publicação:</label>
-                  <input type="number" class="form-control" id="ano" name="year" placeholder="Ex: 1954" required
-                    min="0">
+                  <input type="number" class="form-control" id="ano" name="year" placeholder="Ex: 1954" required min="0">
                 </div>
                 <div class="col-md-4 mb-3">
                   <label for="quantity" class="form-label">Quantidade em Estoque:</label>
-                  <input type="number" class="form-control" id="quant" name="quantity" placeholder="Ex: 15" required
-                    min="0">
+                  <input type="number" class="form-control" id="quant" name="quantity" placeholder="Ex: 15" required min="0">
                 </div>
                 <div class="col-md-4 mb-3">
                   <label for="price" class="form-label">Preço (R$):</label>
-                  <input type="number" class="form-control" id="preco" name="price" placeholder="Ex: 45.90" step="0.01"
-                    required min="0">
+                  <input type="number" class="form-control" id="preco" name="price" placeholder="Ex: 45.90" step="0.01" required min="0">
                 </div>
               </div>
-
               <hr>
-
               <button type="submit" class="btn btn-primary">Cadastrar Livro</button>
               <a href="/" class="btn btn-secondary">Cancelar</a>
-
             </form>
           </div>
-        </div>
-      </div>
-    </div>
 
-    <div class="row">
-      <% if (typeof books !=='undefined' && books.length> 0) { %>
-        <% books.forEach(book=> { %>
-          <div class="col-lg-6 mb-4">
-            <div class="card h-100 shadow-sm">
-              <div class="card-body d-flex flex-column">
-                <h5 class="card-title">
-                  <%= book.title %>
-                </h5>
-                <h6 class="card-subtitle mb-2 text-muted">
-                  <%= book.author %>
-                </h6>
-                <hr>
-                <ul class="list-group list-group-flush">
-                  <li class="list-group-item"><strong>Editora:</strong>
-                    <%= book.bookpublisher %>
-                  </li>
-                  <li class="list-group-item"><strong>Ano:</strong>
-                    <%= book.year %>
-                  </li>
-                  <li class="list-group-item"><strong>Estoque:</strong>
-                    <%= book.quantity %>
-                  </li>
-                  <li class="list-group-item"><strong>Preço:</strong>
-                    <%= parseFloat(book.price).toLocaleString('pt-BR', { style: 'currency' , currency: 'BRL' }) %>
-                  </li>
-                </ul>
-                <div class="mt-auto pt-3 text-end">
-                  <a href="/books/update/<%= book._id %>" class="btn btn-primary btn-sm">Editar</a>
-                  <form action="/books/delete/<%= book._id %>" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                  </form>
-                </div>
+        <% } else { %>
+          <div class="card-header">
+            <h2>Cadastro de Novo Livro</h2>
+          </div>
+          <div class="card-body">
+            <fieldset disabled>
+              <div class="mb-3">
+                <label class="form-label">Título do Livro:</label>
+                <input type="text" class="form-control" placeholder="Ex: O Senhor dos Anéis">
               </div>
+              <div class="mb-3">
+                <label class="form-label">Autor:</label>
+                <input type="text" class="form-control" placeholder="Ex: J.R.R. Tolkien">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Editora:</label>
+                <input type="text" class="form-control" placeholder="Ex: HarperCollins">
+              </div>
+            </fieldset>
+            <div class="alert alert-warning mt-3" role="alert">
+              Para cadastrar livros, <a href="/login" class="alert-link">faça login</a> ou <a href="/register" class="alert-link">cadastre-se</a> como bibliotecário.
             </div>
           </div>
-          <% }); %>
-            <% } else { %>
-              <div class="col-12">
-                <div class="alert alert-secondary text-center" role="alert">
-                  Ainda não há livros cadastrados.
-                </div>
-              </div>
-              <% } %>
+        <% } %>
+      </div>
     </div>
   </div>
 
-  <%- include('partials/footer.ejs') %>
+  <div class="row">
+    <% if (typeof books !== 'undefined' && books.length > 0) { %>
+      <% books.forEach(book => { %>
+        <div class="col-lg-6 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title"><%= book.title %></h5>
+              <h6 class="card-subtitle mb-2 text-muted"><%= book.author %></h6>
+              <hr>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Editora:</strong> <%= book.bookpublisher %></li>
+                <li class="list-group-item"><strong>Ano:</strong> <%= book.year %></li>
+                <li class="list-group-item"><strong>Disponíveis:</strong> <%= book.availableQuantity %></li>
+                <li class="list-group-item"><strong>Preço:</strong> <%= parseFloat(book.price).toLocaleString('pt-BR', { style: 'currency' , currency: 'BRL' }) %></li>
+                
+                <% if (book.librarianName) { %>
+                  <li class="list-group-item"><strong>Cadastrado por:</strong> <%= book.librarianName %></li>
+                <% } %>
+              </ul>
+
+              <div class="mt-auto pt-3 text-end">
+                <% if (isLoggedIn) { %>
+                  <a href="/books/reserve/<%= book._id %>" class="btn btn-success btn-sm">Reservar</a>
+                <% } %>
+                
+                <% if (isLoggedIn && isLibrarian) { %>
+                  <a href="/books/edit/<%= book._id %>" class="btn btn-primary btn-sm">Editar</a>
+                  <form action="/books/delete/<%= book._id %>" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="col-12">
+        <div class="alert alert-secondary text-center" role="alert">
+          Ainda não há livros cadastrados.
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer.ejs') %>
