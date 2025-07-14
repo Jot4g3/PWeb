@@ -124,7 +124,7 @@
                     <% } %>
 
                       <% if (isLibrarian) { %>
-                        <a href="/books/edit/<%= book._id %>" class="btn btn-primary btn-sm">Editar</a>
+                        <a href="/books/update/<%= book._id %>" class="btn btn-primary btn-sm">Editar</a>
                         <form action="/books/delete/<%= book._id %>" method="post" style="display:inline;">
                           <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
                         </form>
