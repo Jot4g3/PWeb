@@ -5,7 +5,7 @@ const express = require("express");
 const app = express();
 require("dotenv").config();
 
-const { MongoClient, ObjectId } = require("mongodb"); // CORREÇÃO: Importar ObjectId aqui
+const { MongoClient, ObjectId } = require("mongodb");
 const BooksDAO = require("./dao/booksDAO");
 const UsersDAO = require("./dao/usersDAO");
 const ReservationsDAO = require("./dao/reservationsDAO");
@@ -13,12 +13,14 @@ const ReservationsDAO = require("./dao/reservationsDAO");
 const bcrypt = require("bcrypt");
 const session = require('express-session');
 const flash = require('connect-flash');
+const MongoStore = require('connect-mongo');
 
 // ===================================================
 // VARIÁVEIS DE AMBIENTE
 // ===================================================
 const URI = process.env.URI;
 const PORT = process.env.PORT || 3000; // Define 3000 como porta padrão se não houver no .env
+const secretSession = process.env.secretSession
 
 // ===================================================
 // MIDDLEWARES
@@ -28,14 +30,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public')); // Para servir arquivos estáticos como CSS, se necessário
 
 app.use(session({
-    secret: 'JesusCristoOSalvador',
+    secret: secretSession, // Ótimo que você já está usando uma variável para isso!
     resave: false,
-    saveUninitialized: false, // Alterado para false, melhor prática para login
+    saveUninitialized: false,
+    
+    // A MÁGICA ACONTECE AQUI:
+    store: MongoStore.create({
+        mongoUrl: URI, // Usa a mesma URI de conexão do seu banco de dados
+        dbName: 'library', // O nome do seu banco de dados
+        collectionName: 'sessions', // Nome da coleção onde as sessões serão salvas
+        ttl: 14 * 24 * 60 * 60 // Tempo de vida da sessão em segundos (opcional, aqui 14 dias)
+    }),
+
     cookie: {
-        secure: false,
-        maxAge: 1000 * 60 * 60 * 24
+        secure: false, // Em produção (com HTTPS), mude para true
+        maxAge: 1000 * 60 * 60 * 24 // 1 dia, para o cookie do navegador
     }
 }));
+
 app.use(flash());
 
 // CORREÇÃO: Middleware único e otimizado
@@ -46,9 +58,9 @@ app.use((req, res, next) => {
     next();
 });
 
-// ===================================================
+// ============================================================
 // FUNÇÃO PRINCIPAL PARA CONECTAR AO BANCO E INICIAR O SERVIDOR
-// ===================================================
+// ============================================================
 async function main() {
     const client = new MongoClient(URI);
     try {
@@ -74,18 +86,19 @@ async function main() {
                     const reservations = await reservationsCollection.find({
                         userId: new ObjectId(req.session.userId)
                     }).toArray();
-                    userReservations = new Set(reservations.map(r => r.bookId.toString()));
+                    userReservations = new Set(reservations.map(reservation => reservation.bookId.toString()));
                 }
 
                 res.render('index', {
                     books: books,
                     isLoggedIn: req.session.isLoggedIn || false, // Redundante!
-                    isLibrarian: req.session.isLibrarian || false // Redundante!
+                    isLibrarian: req.session.isLibrarian || false, // Redundante!
+                    booksReserved: userReservations
                 });
             } catch (err) {
                 console.log("Erro ao buscar livros para a página inicial:", err);
                 req.flash('error_msg', 'Não foi possível carregar os livros.');
-                res.render('index', { books: [], userReservations: new Set() });
+                res.render('index', { books: [], booksReserved: new Set() });
             }
         });
 
@@ -101,11 +114,11 @@ async function main() {
                     title: book.title,
                     author: book.author,
                     bookpublisher: book.bookpublisher,
-                    year: parseInt(book.year), // CORREÇÃO: Converter para número
-                    quantity: parseInt(book.quantity), // CORREÇÃO: Converter para número
-                    price: parseFloat(book.price), // CORREÇÃO: Converter para número de ponto flutuante
+                    year: parseInt(book.year),
+                    quantity: parseInt(book.quantity),
+                    price: parseFloat(book.price),
                     qttReserved: 0, // Inicia com 0
-                    createdBy: new ObjectId(req.session.userId) // CORREÇÃO: req.session e ObjectId
+                    createdBy: new ObjectId(req.session.userId)
                 };
                 await BooksDAO.insertBook(booksCollection, doc);
                 req.flash('success_msg', 'Livro cadastrado com sucesso!');
@@ -149,9 +162,9 @@ async function main() {
         });
 
         // CORREÇÃO: Rota de reserva única e completa
-        app.post('/books/reserve/:bookId', async (req, res) => {
+        app.get('/books/reserve/:bookId', async (req, res) => {
             if (!req.session.isLoggedIn) {
-                req.flash('error_msg', 'Você precisa fazer login para reservar.');
+                req.flash('error_msg', 'Você precisa fazer login para reservar um livro.');
                 return res.redirect('/login');
             }
             try {
@@ -160,8 +173,15 @@ async function main() {
 
                 const existingReservation = await ReservationsDAO.findReservation(reservationsCollection, userId, bookId);
                 if (existingReservation) {
-                    req.flash('error_msg', 'Você já reservou este livro.');
-                    return res.redirect('/');
+                    try{
+                        await ReservationsDAO.deleteReservationByBookID(reservationsCollection, req.params.bookId)
+                        req.flash('success_msg', 'A reserva foi cancelada!');
+                    } catch (err){
+                        console.log(err)
+                        req.flash('error_msg', 'Não foi possível cancelar reserva.');
+                    } finally {
+                        return res.redirect('/');
+                    }
                 }
 
                 const userReservationCount = await ReservationsDAO.countUserReservations(reservationsCollection, userId);
@@ -182,7 +202,7 @@ async function main() {
                     reservationDate: new Date()
                 };
                 await ReservationsDAO.createReservation(reservationsCollection, reservationDoc);
-                await BooksDAO.updateBookById(booksCollection, bookId, { $inc: { qttReserved: 1 } });
+                await BooksDAO.updateBookById(booksCollection, bookId,  { qttReserved: book.qttReserved + 1 });
 
                 req.flash('success_msg', 'Livro reservado com sucesso!');
                 res.redirect('/');

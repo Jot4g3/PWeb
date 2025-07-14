@@ -43,6 +43,17 @@ class ReservationsDAO {
             throw err;
         }
     }
+
+    static async deleteReservationByBookID(client, bookId) {
+        try {
+            return await client.deleteOne({
+                bookId: new ObjectId(bookId)
+            });
+        } catch (err) {
+            console.error("Erro ao deletar reserva.:", err);
+            throw err;
+        }
+    }
 }
 
 module.exports = ReservationsDAO;
