@@ -82,7 +82,7 @@
       <% if (typeof books !=='undefined' && books.length> 0) { %>
         <% books.forEach(book=> { %>
           <div class="col-lg-6 mb-4">
-            <div class="card h-100 shadow-sm" style="<% if (isLoggedIn && booksReserved.has(book._id.toString())) { %> background-color: rgba(48,84,148,0.25); <% } %>">
+            <div class="card h-100 shadow-sm" style=" <% if (isLoggedIn && booksReserved.has(book._id.toString())) { %> background-color: rgba(48,84,148,0.25); <% } %>">
               <div class="card-body d-flex flex-column">
                 <h5 class="card-title">
                   <%= book.title %>

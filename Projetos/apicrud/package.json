@@ -5,8 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "João Gabriel Aguiar de Senna",
+  "keywords": ["the library"],
+  "author": "Jot4g3",
   "license": "ISC",
   "description": "",
   "dependencies": {
