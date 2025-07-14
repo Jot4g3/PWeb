@@ -44,10 +44,11 @@ class ReservationsDAO {
         }
     }
 
-    static async deleteReservationByBookID(client, bookId) {
+    static async deleteReservation(client, bookId, userId) {
         try {
             return await client.deleteOne({
-                bookId: new ObjectId(bookId)
+                bookId: new ObjectId(bookId),
+                userId: new ObjectId(userId)
             });
         } catch (err) {
             console.error("Erro ao deletar reserva.:", err);

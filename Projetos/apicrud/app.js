@@ -174,7 +174,7 @@ async function main() {
                 const existingReservation = await ReservationsDAO.findReservation(reservationsCollection, userId, bookId);
                 if (existingReservation) {
                     try{
-                        await ReservationsDAO.deleteReservationByBookID(reservationsCollection, req.params.bookId)
+                        await ReservationsDAO.deleteReservation(reservationsCollection, req.params.bookId, req.session.userId)
                         req.flash('success_msg', 'A reserva foi cancelada!');
                     } catch (err){
                         console.log(err)
