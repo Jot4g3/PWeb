@@ -82,7 +82,7 @@
       <% if (typeof books !=='undefined' && books.length> 0) { %>
         <% books.forEach(book=> { %>
           <div class="col-lg-6 mb-4">
-            <div class="card h-100 shadow-sm" style=" <% if (isLoggedIn && booksReserved.has(book._id.toString())) { %> background-color: rgba(48,84,148,0.25); <% } %>">
+            <div class="card h-100 shadow-sm <%= (isLoggedIn && booksReserved.has(book._id.toString())) ? "card-reserved" : "card-not-reserved" %>">
               <div class="card-body d-flex flex-column">
                 <h5 class="card-title">
                   <%= book.title %>
@@ -91,22 +91,22 @@
                   <%= book.author %>
                 </h6>
                 <hr>
-                <ul class="list-group list-group-flush rounded">
-                  <li class="list-group-item"><strong>Editora:</strong>
+                <ul class="list-group list-group-flush rounded <%= (isLoggedIn && booksReserved.has(book._id.toString())) ? "card-reserved" : "card-not-reserved" %>">
+                  <li class="list-group-item bg-transparent"><strong>Editora:</strong>
                     <%= book.bookpublisher %>
                   </li>
-                  <li class="list-group-item"><strong>Ano:</strong>
+                  <li class="list-group-item bg-transparent"><strong>Ano:</strong>
                     <%= book.year %>
                   </li>
-                  <li class="list-group-item"><strong>Disponíveis:</strong>
+                  <li class="list-group-item bg-transparent"><strong>Disponíveis:</strong>
                     <%= book.availableQuantity %>
                   </li>
-                  <li class="list-group-item"><strong>Preço:</strong>
+                  <li class="list-group-item bg-transparent"><strong>Preço:</strong>
                     <%= parseFloat(book.price).toLocaleString('pt-BR', { style: 'currency' , currency: 'BRL' }) %>
                   </li>
 
                   <% if (book.librarianName) { %>
-                    <li class="list-group-item"><strong>Cadastrado por:</strong>
+                    <li class="list-group-item bg-transparent"><strong>Cadastrado por:</strong>
                       <%= book.librarianName %>
                     </li>
                     <% } %>
@@ -114,16 +114,16 @@
 
                 <div class="mt-auto pt-3 text-end">
                   <% if (isLoggedIn) { %>
-                      <% if (isLoggedIn && !booksReserved.has(book._id.toString())) { %>
+                      <% if (!booksReserved.has(book._id.toString())) { %>
                         <a href="/books/reserve/<%= book._id %>" class="btn btn-success btn-sm">Reservar</a>
                       <% } %>
 
-                      <% if (isLoggedIn && booksReserved.has(book._id.toString())) { %>
+                      <% if (booksReserved.has(book._id.toString())) { %>
                         <a href="/books/reserve/<%= book._id %>" class="btn btn-secondary btn-sm">Cancelar Reserva</a>
                       <% } %>
                     <% } %>
 
-                      <% if (isLoggedIn && isLibrarian) { %>
+                      <% if (isLibrarian) { %>
                         <a href="/books/edit/<%= book._id %>" class="btn btn-primary btn-sm">Editar</a>
                         <form action="/books/delete/<%= book._id %>" method="post" style="display:inline;">
                           <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
