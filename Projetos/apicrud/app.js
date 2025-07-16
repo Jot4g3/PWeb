@@ -149,8 +149,9 @@ async function main() {
                     year: parseInt(book.year),
                     quantity: parseInt(book.quantity),
                     price: parseFloat(book.price),
-                    qttReserved: 0, // Inicia com 0
-                    createdBy: new ObjectId(req.session.userId)
+                    qttReserved: 0, // Inicia com 0, MAS NÃO DEVERIA SER (PORQUE JÁ PODEM HAVER LIVROS RESERVADOS NO MOMENTO DE CRIAÇÃO DO LIVRO NO BD)
+                    createdBy: new ObjectId(req.session.userId),
+                    libraryId: new ObjectId(req.session.libraryId)
                 };
                 await BooksDAO.insertBook(booksCollection, doc);
                 req.flash('success_msg', 'Livro cadastrado com sucesso!');

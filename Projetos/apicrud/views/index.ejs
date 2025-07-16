@@ -113,15 +113,24 @@
                         </li>
                         <% } %>
 
-                          <% if (book.library && book.library.name) { const fullAddress=`${book.library.address.street},
-                            ${book.library.address.city}, ${book.library.address.state}`; const
-                            googleMapsUrl='https://www.google.com/maps/search/?api=1&query=' +
-                            encodeURIComponent(fullAddress); %>
+                          <% if (book.library && book.library.name) { %>
                             <li class="list-group-item bg-transparent">
                               <strong>Disponível em:</strong>
-                              <a href="/libraries/<%= book.library._id %>">
-                                <%= book.library.name %> <i class="bi bi-geo-alt-fill"></i>
-                              </a>
+
+                              <% const fullAddress=`${book.library.address.street}, ${book.library.address.city},
+                                ${book.library.address.state}`; const
+                                googleMapsUrl='https://www.google.com/maps/search/?api=1&query=' +
+                                encodeURIComponent(fullAddress); %>
+
+                                <a href="/libraries/<%= book.library._id %>" class="text-decoration-none">
+                                  <%= book.library.name %>
+                                </a>
+
+                                <a href="<%= googleMapsUrl %>" target="_blank" rel="noopener noreferrer" class="ms-2"
+                                  title="Ver no mapa">
+                                  <i class="bi bi-geo-alt-fill"></i>
+                                </a>
+
                             </li>
                             <% } %>
 

@@ -1,3 +1,5 @@
+const { ObjectId } = require('mongodb');
+
 class LibrariesDAO {
     /**
      * Cria um novo documento de biblioteca.
