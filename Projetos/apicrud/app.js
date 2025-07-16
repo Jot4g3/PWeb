@@ -51,6 +51,29 @@ app.use(session({
 
 app.use(flash());
 
+// Middleware para redirecionar bibliotecários sem biblioteca
+app.use((req, res, next) => {
+    const isLibrarian = req.session.isLibrarian;
+    const hasNoLibrary = !req.session.libraryId;
+    const allowedPaths = [
+        '/login',
+        '/register',
+        '/logout',
+        '/libraries/onboarding', // Pode acessar a própria página
+        '/libraries/new',       // Pode acessar a página de criação
+        '/libraries/create',    // Pode enviar o formulário de criação
+        '/libraries/join'       // Pode enviar o formulário para se juntar
+    ];
+
+    // Se ele for um bibliotecário sem biblioteca E não estiver em uma das rotas permitidas...
+    if (isLibrarian && hasNoLibrary && !allowedPaths.includes(req.path)) {
+        // ...redirecione-o para a página de decisão.
+        return res.redirect('/libraries/onboarding');
+    }
+
+    next(); // Se não, vida que segue.
+});
+
 // CORREÇÃO: Middleware único e otimizado
 app.use((req, res, next) => {
     res.locals.success_msg = req.flash('success_msg');
@@ -319,6 +342,96 @@ async function main() {
             });
         });
 
+        // Em app.js, adicione esta rota
+
+        app.get('/profile', async (req, res) => {
+            // 1. Protege a rota: só para usuários logados
+            if (!req.session.isLoggedIn) {
+                req.flash('error_msg', 'Você precisa estar logado para ver seu perfil.');
+                return res.redirect('/login');
+            }
+
+            try {
+                const userId = new ObjectId(req.session.userId);
+
+                // 2. Usa agregação para buscar o usuário e os dados da sua biblioteca (se existir)
+                const userData = await usersCollection.aggregate([
+                    { $match: { _id: userId } },
+                    {
+                        $lookup: {
+                            from: 'libraries',
+                            localField: 'libraryId',
+                            foreignField: '_id',
+                            as: 'libraryDetails'
+                        }
+                    },
+                    {
+                        $unwind: {
+                            path: '$libraryDetails',
+                            preserveNullAndEmptyArrays: true // Mantém o usuário mesmo se ele não tiver biblioteca
+                        }
+                    }
+                ]).toArray();
+
+                if (userData.length === 0) {
+                    req.flash('error_msg', 'Usuário não encontrado.');
+                    return res.redirect('/');
+                }
+
+                // 3. Renderiza a página, passando os dados encontrados
+                res.render('profile', { user: userData[0] });
+
+            } catch (err) {
+                console.error("Erro ao carregar perfil:", err);
+                req.flash('error_msg', 'Não foi possível carregar seu perfil.');
+                res.redirect('/');
+            }
+        });
+
+        // Em app.js, adicione esta rota
+
+        app.post('/profile', async (req, res) => {
+            if (!req.session.isLoggedIn) {
+                return res.redirect('/login');
+            }
+
+            const { isLibrarian, accessKey } = req.body;
+            const userId = req.session.userId;
+
+            // Se o usuário marcou a caixa "Sou um bibliotecário" e enviou um código
+            if (isLibrarian === 'on' && accessKey) {
+                try {
+                    // 1. Encontra a biblioteca pelo código de acesso
+                    const library = await LibrariesDAO.findLibraryByAccessKey(librariesCollection, accessKey);
+
+                    if (!library) {
+                        req.flash('error_msg', 'Código de Acesso da Biblioteca inválido.');
+                        return res.redirect('/profile');
+                    }
+
+                    // 2. Atualiza o documento do usuário
+                    await UsersDAO.assignLibraryToUser(usersCollection, userId, library._id);
+                    // Também atualizamos o status de bibliotecário
+                    await usersCollection.updateOne({ _id: new ObjectId(userId) }, { $set: { isLibrarian: true } });
+
+                    // 3. Atualiza a sessão para refletir a mudança imediatamente
+                    req.session.isLibrarian = true;
+                    req.session.libraryId = library._id;
+
+                    req.flash('success_msg', `Agora você é um bibliotecário da ${library.name}!`);
+                    res.redirect('/profile');
+
+                } catch (err) {
+                    console.error("Erro ao se tornar bibliotecário:", err);
+                    req.flash('error_msg', 'Ocorreu um erro ao processar sua solicitação.');
+                    res.redirect('/profile');
+                }
+            } else {
+                // Se o formulário foi enviado sem as informações necessárias
+                res.redirect('/profile');
+            }
+        });
+
         // ROTA GET PARA MOSTRAR O FORMULÁRIO DE CADASTRO DE BIBLIOTECA
         app.get('/libraries/new', (req, res) => {
             // Adicionaremos uma verificação para garantir que só usuários logados possam criar bibliotecas
@@ -327,6 +440,15 @@ async function main() {
                 return res.redirect('/login');
             }
             res.render('new-library.ejs');
+        });
+
+        // ROTA PARA EXIBIR A PÁGINA DE DECISÃO PARA BIBLIOTECÁRIOS
+        app.get('/libraries/onboarding', (req, res) => {
+            if (!req.session.isLoggedIn || !req.session.isLibrarian) {
+                req.flash('error_msg', 'Acesso não autorizado.');
+                return res.redirect('/');
+            }
+            res.render('library-onboarding.ejs');
         });
 
         app.post('/libraries/create', async (req, res) => {
@@ -415,6 +537,77 @@ async function main() {
                 console.error("Erro ao tentar entrar na biblioteca:", err);
                 req.flash('error_msg', 'Ocorreu um erro, tente novamente.');
                 res.redirect('/'); // ou para a página do formulário
+            }
+        });
+
+        // ROTA PARA DELETAR UMA BIBLIOTECA
+        app.post('/libraries/delete/:id', async (req, res) => {
+            const libraryId = req.params.id;
+            const session = req.session;
+
+            // Proteção: Apenas um bibliotecário logado pode tentar excluir,
+            // e ele deve pertencer à biblioteca que está tentando excluir.
+            if (!session.isLoggedIn || !session.isLibrarian) {
+                req.flash('error_msg', 'Ação não autorizada.');
+                return res.redirect('/');
+            }
+
+            // Converte ambos para string para uma comparação segura
+            if (session.libraryId.toString() !== libraryId) {
+                req.flash('error_msg', 'Você não tem permissão para excluir esta biblioteca.');
+                return res.redirect('/');
+            }
+
+            try {
+                // Passa o objeto 'db' inteiro para o método do DAO, 
+                // pois ele precisa acessar múltiplas coleções.
+                await LibrariesDAO.deleteLibraryCascade(db, libraryId);
+
+                // Limpa o libraryId da sessão do usuário, já que a biblioteca não existe mais
+                req.session.libraryId = null;
+
+                req.flash('success_msg', 'A biblioteca e todos os seus dados foram excluídos com sucesso.');
+                res.redirect('/'); // Redireciona para a página principal
+
+            } catch (err) {
+                req.flash('error_msg', 'Não foi possível excluir a biblioteca.');
+                res.redirect('/'); // Ou para a página de perfil da biblioteca
+            }
+        });
+
+        // ROTA PARA EXIBIR O PERFIL DE UMA BIBLIOTECA
+        app.get('/libraries/:id', async (req, res) => {
+            try {
+                const libraryId = req.params.id;
+
+                // 1. Busca os dados da biblioteca e os livros dela em paralelo
+                const [library, books] = await Promise.all([
+                    LibrariesDAO.getLibraryById(librariesCollection, libraryId),
+                    BooksDAO.getBooksByLibraryId(booksCollection, libraryId)
+                ]);
+
+                if (!library) {
+                    req.flash('error_msg', 'Biblioteca não encontrada.');
+                    return res.redirect('/');
+                }
+
+                // 2. Verifica se o usuário logado é um bibliotecário DESTA biblioteca
+                let isManagerOfThisLibrary = false;
+                if (req.session.isLibrarian && req.session.libraryId?.toString() === library._id.toString()) {
+                    isManagerOfThisLibrary = true;
+                }
+
+                // 3. Renderiza a página, passando todos os dados necessários
+                res.render('library-profile', {
+                    library: library,
+                    books: books,
+                    isManager: isManagerOfThisLibrary
+                });
+
+            } catch (err) {
+                console.error("Erro ao carregar perfil da biblioteca:", err);
+                req.flash('error_msg', 'Não foi possível carregar a página da biblioteca.');
+                res.redirect('/');
             }
         });
 

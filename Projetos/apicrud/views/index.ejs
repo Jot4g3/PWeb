@@ -119,7 +119,7 @@
                             encodeURIComponent(fullAddress); %>
                             <li class="list-group-item bg-transparent">
                               <strong>Disponível em:</strong>
-                              <a href="<%= googleMapsUrl %>" target="_blank" rel="noopener noreferrer">
+                              <a href="/libraries/<%= book.library._id %>">
                                 <%= book.library.name %> <i class="bi bi-geo-alt-fill"></i>
                               </a>
                             </li>
@@ -140,7 +140,7 @@
                         <% } %>
 
                           <% if (session.isLoggedIn && session.isLibrarian) { %>
-                            <a href="/books/edit/<%= book._id %>" class="btn btn-primary btn-sm">Editar</a>
+                            <a href="/books/update/<%= book._id %>" class="btn btn-primary btn-sm">Editar</a>
                             <form action="/books/delete/<%= book._id %>" method="post" style="display:inline;">
                               <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
                             </form>

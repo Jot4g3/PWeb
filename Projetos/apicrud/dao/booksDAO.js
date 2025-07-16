@@ -101,6 +101,31 @@ class BooksDAO {
             console.log(err)
         }
     }
+    
+    static async getBooksByLibraryId(client, libraryId) {
+        try {
+            const pipeline = [
+                // 1. Filtra apenas os livros da biblioteca especificada
+                { $match: { libraryId: new ObjectId(libraryId) } },
+                // O resto da agregação é igual à que já temos em getAllBooks
+                { $lookup: { from: "users", localField: "createdBy", foreignField: "_id", as: "librarianInfo" } },
+                { $unwind: { path: "$librarianInfo", preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        title: 1, author: 1, bookpublisher: 1, year: 1, price: 1,
+                        availableQuantity: { $subtract: [{ $toInt: "$quantity" }, "$qttReserved"] },
+                        librarianName: "$librarianInfo.name"
+                        // Não precisamos dos dados da biblioteca aqui, pois já estamos na página dela
+                    }
+                },
+                { $sort: { title: 1 } }
+            ];
+            return await client.aggregate(pipeline).toArray();
+        } catch (err) {
+            console.error("Erro ao buscar livros por ID da biblioteca:", err);
+            throw err;
+        }
+    }
 }
 
 module.exports = BooksDAO

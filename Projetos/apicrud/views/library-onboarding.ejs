@@ -1,0 +1,47 @@
+<%- include('partials/header.ejs') %>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="mb-3">Bem-vindo, Bibliotecário!</h2>
+                <p class="lead text-muted">Para começar a gerenciar livros, você precisa primeiro se associar a uma
+                    biblioteca ou criar uma nova.</p>
+                <hr>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Entrar em uma Biblioteca</h5>
+                                <p class="card-text">Se você recebeu um código de acesso de uma biblioteca já existente,
+                                    insira-o aqui.</p>
+                                <form action="/libraries/join" method="POST">
+                                    <div class="mb-3">
+                                        <label for="accessKey" class="form-label">Código de Acesso:</label>
+                                        <input type="text" class="form-control" name="accessKey" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Entrar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">Criar uma Nova Biblioteca</h5>
+                                <p class="card-text">Se você é o fundador ou o primeiro bibliotecário, cadastre uma nova
+                                    biblioteca no sistema.</p>
+                                <div class="mt-auto">
+                                    <a href="/libraries/new" class="btn btn-outline-secondary w-100">Criar Nova
+                                        Biblioteca</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer.ejs') %>
