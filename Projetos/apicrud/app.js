@@ -33,7 +33,7 @@ app.use(session({
     secret: secretSession, // Ótimo que você já está usando uma variável para isso!
     resave: false,
     saveUninitialized: false,
-    
+
     // A MÁGICA ACONTECE AQUI:
     store: MongoStore.create({
         mongoUrl: URI, // Usa a mesma URI de conexão do seu banco de dados
@@ -173,10 +173,10 @@ async function main() {
 
                 const existingReservation = await ReservationsDAO.findReservation(reservationsCollection, userId, bookId);
                 if (existingReservation) {
-                    try{
+                    try {
                         await ReservationsDAO.deleteReservation(reservationsCollection, req.params.bookId, req.session.userId)
                         req.flash('success_msg', 'A reserva foi cancelada!');
-                    } catch (err){
+                    } catch (err) {
                         console.log(err)
                         req.flash('error_msg', 'Não foi possível cancelar reserva.');
                     } finally {
@@ -202,7 +202,7 @@ async function main() {
                     reservationDate: new Date()
                 };
                 await ReservationsDAO.createReservation(reservationsCollection, reservationDoc);
-                await BooksDAO.updateBookById(booksCollection, bookId,  { qttReserved: book.qttReserved + 1 });
+                await BooksDAO.updateBookById(booksCollection, bookId, { qttReserved: book.qttReserved + 1 });
 
                 req.flash('success_msg', 'Livro reservado com sucesso!');
                 res.redirect('/');
@@ -216,33 +216,71 @@ async function main() {
         // ROTAS DE USUÁRIO (Login/Register/Logout)
         app.get("/register", (req, res) => res.render("register.ejs"));
 
+
         app.post("/register", async (req, res) => {
-            const { name, email, password, passwordConfirm } = req.body;
-            const isLibrarian = req.body.isLibrarian === 'on';
+            try {
+                // 1. Pega os dados do formulário (sem o accessKey)
+                const { name, email, password, passwordConfirm } = req.body;
+                const isLibrarian = req.body.isLibrarian === 'on';
 
-            if (!name || !email || !password || !passwordConfirm) {
-                req.flash('error_msg', 'Todos os campos são obrigatórios.');
-                return res.render('register.ejs');
+                // 2. Validações básicas
+                if (!name || !email || !password || !passwordConfirm) {
+                    req.flash('error_msg', 'Todos os campos são obrigatórios.');
+                    return res.redirect('/register');
+                }
+                if (password !== passwordConfirm) {
+                    req.flash('error_msg', 'As senhas não conferem!');
+                    return res.redirect('/register');
+                }
+
+                // 3. Verifica se o e-mail já existe
+                const existingUser = await UsersDAO.getUserByEmail(usersCollection, email);
+                if (existingUser) {
+                    req.flash('error_msg', 'Este e-mail já está em uso.');
+                    return res.redirect('/register');
+                }
+
+                // 4. Criptografa a senha
+                const salt = await bcrypt.genSalt(12);
+                const hashedPassword = await bcrypt.hash(password, salt);
+
+                // 5. Monta o novo documento do usuário (libraryId começa como nulo)
+                const newUserDoc = {
+                    name,
+                    email,
+                    password: hashedPassword,
+                    isLibrarian,
+                    libraryId: null
+                };
+
+                // 6. Salva o usuário e pega o ID dele
+                const result = await UsersDAO.insertUser(usersCollection, newUserDoc);
+                const newUserId = result.insertedId;
+
+                // ===================================================
+                // 7. LÓGICA DE REDIRECIONAMENTO (A GRANDE MUDANÇA)
+                // ===================================================
+                if (isLibrarian) {
+                    // Se for um bibliotecário, inicie a sessão para ele...
+                    req.session.isLoggedIn = true;
+                    req.session.userId = newUserId;
+                    req.session.userName = name;
+                    req.session.isLibrarian = true;
+                    req.session.libraryId = null; // Ele ainda não tem uma biblioteca associada
+
+                    // ...e o redirecione para a página de criação de biblioteca.
+                    req.flash('success_msg', 'Conta criada com sucesso! Agora, cadastre os dados da sua biblioteca.');
+                    return res.redirect('/libraries/new');
+                } else {
+                    // Se for um usuário comum, apenas mande-o para a página de login.
+                    req.flash('success_msg', 'Conta criada com sucesso! Por favor, faça o login.');
+                    return res.redirect("/login");
+                }
+            } catch (err) {
+                console.error("Erro no registro:", err);
+                req.flash('error_msg', 'Ocorreu um erro ao criar sua conta.');
+                res.redirect('/register');
             }
-            if (password !== passwordConfirm) {
-                req.flash('error_msg', 'As senhas não conferem!');
-                return res.render('register.ejs');
-            }
-
-            const existingUser = await UsersDAO.getUserByEmail(usersCollection, email);
-            if (existingUser) {
-                req.flash('error_msg', 'Este e-mail já está em uso.');
-                return res.render('register.ejs');
-            }
-
-            const salt = await bcrypt.genSalt(12);
-            const hashedPassword = await bcrypt.hash(password, salt);
-
-            const newUser = { name, email, password: hashedPassword, isLibrarian };
-            await UsersDAO.insertUser(usersCollection, newUser);
-
-            req.flash('success_msg', 'Conta criada com sucesso! Faça o login.');
-            res.redirect("/login");
         });
 
         app.get('/login', (req, res) => res.render('login.ejs'));
@@ -274,6 +312,112 @@ async function main() {
                 res.clearCookie('connect.sid');
                 res.redirect('/login');
             });
+        });
+
+        // ROTA GET PARA MOSTRAR O FORMULÁRIO DE CADASTRO DE BIBLIOTECA
+        app.get('/libraries/new', (req, res) => {
+            // Adicionaremos uma verificação para garantir que só usuários logados possam criar bibliotecas
+            if (!req.session.isLoggedIn) {
+                req.flash('error_msg', 'Você precisa estar logado para criar uma nova biblioteca.');
+                return res.redirect('/login');
+            }
+            res.render('new-library.ejs');
+        });
+
+        app.post('/libraries/create', async (req, res) => {
+            // A verificação de login agora funciona, pois o usuário foi redirecionado para cá logado!
+            if (!req.session.isLoggedIn) {
+                return res.redirect('/login');
+            }
+
+            try {
+                const libraryData = req.body; // nome, endereço, etc.
+                const userId = req.session.userId;
+
+                // [Lógica para geocodificação e para gerar um accessKey aqui...]
+                const accessKey = `BIBL-${Date.now()}`; // Exemplo simples de chave de acesso
+
+                // Assumindo que você já tem essas variáveis na sua rota POST /libraries/create:
+                // const libraryData = req.body;
+                // const coords = await getCoordsForAddress(libraryData.street + ', ' + libraryData.city);
+                // const accessKey = `BIBL-${Date.now()}`;
+
+                const newLibraryDoc = {
+                    name: libraryData.name,
+                    address: {
+                        street: libraryData.street,
+                        city: libraryData.city,
+                        state: libraryData.state,
+                        zipCode: libraryData.zipCode,
+                        // Dados que viriam da API de geocodificação
+                        latitude: coords ? coords.latitude : null,
+                        longitude: coords ? coords.longitude : null
+                    },
+                    // Chave de acesso gerada
+                    accessKey: accessKey,
+
+                    // Outros campos do formulário (sugestões)
+                    phoneNumber: libraryData.phoneNumber || '', // Usa string vazia se não for fornecido
+                    openingHours: libraryData.openingHours || 'Não informado', // Usa um padrão se não for fornecido
+                    website: libraryData.website || '',
+                    imageUrl: libraryData.imageUrl || '' // Pode ser um link para uma imagem padrão
+                };
+
+                // 1. Cria a biblioteca
+                const result = await LibrariesDAO.createLibrary(librariesCollection, newLibraryDoc);
+                const newLibraryId = result.insertedId;
+
+                // 2. ATUALIZA o documento do usuário que a criou com o ID da nova biblioteca
+                await UsersDAO.assignLibraryToUser(usersCollection, userId, newLibraryId);
+
+                // 3. ATUALIZA a sessão do usuário com o ID da nova biblioteca
+                req.session.libraryId = newLibraryId;
+
+                req.flash('success_msg', `Biblioteca "${newLibraryDoc.name}" criada! Seu código de acesso para outros bibliotecários é: ${accessKey}. Lembre-se de guardar esse código para que novos bibliotecários possam ser associados a essa biblioteca.`);
+                res.redirect('/');
+
+            } catch (err) {
+                // ... tratamento de erro
+            }
+        });
+
+        // ROTA PARA UM USUÁRIO SE JUNTAR A UMA BIBLIOTECA USANDO UM CÓDIGO DE ACESSO
+        app.post('/libraries/join', async (req, res) => {
+            // 1. Garante que o usuário está logado
+            if (!req.session.isLoggedIn) {
+                req.flash('error_msg', 'Você precisa estar logado para entrar em uma biblioteca.');
+                return res.redirect('/login');
+            }
+
+            try {
+                // 2. Pega o accessKey do formulário e o userId da sessão
+                const { accessKey } = req.body;
+                const userId = req.session.userId;
+
+                // 3. Usa o LibrariesDAO para encontrar a biblioteca pelo código
+                const library = await LibrariesDAO.findLibraryByAccessKey(librariesCollection, accessKey);
+
+                // 4. Se a biblioteca não for encontrada, mostra um erro
+                if (!library) {
+                    req.flash('error_msg', 'Código de acesso inválido ou biblioteca não encontrada.');
+                    return res.redirect('/'); // ou para a página do formulário
+                }
+
+                // 5. Se encontrou, usa o UsersDAO para associar o usuário à biblioteca
+                await UsersDAO.assignLibraryToUser(usersCollection, userId, library._id);
+
+                // 6. ATUALIZA A SESSÃO: Importante para que a mudança reflita imediatamente
+                req.session.libraryId = library._id;
+
+                // 7. Redireciona com uma mensagem de sucesso
+                req.flash('success_msg', `Você agora faz parte da ${library.name}!`);
+                res.redirect('/');
+
+            } catch (err) {
+                console.error("Erro ao tentar entrar na biblioteca:", err);
+                req.flash('error_msg', 'Ocorreu um erro, tente novamente.');
+                res.redirect('/'); // ou para a página do formulário
+            }
         });
 
         // ===================================================

@@ -11,55 +11,57 @@ class BooksDAO {
         }
     }
 
+    // Em BooksDAO.js
     static async getAllBooks(client) {
         try {
             const pipeline = [
-                // Estágio 1: "Juntar" a coleção de livros com a de usuários
+                // 1º JOIN: Junta 'books' com 'users' para pegar o nome de quem cadastrou
                 {
                     $lookup: {
-                        from: "users", // A outra coleção
-                        localField: "createdBy", // O campo na coleção de livros
-                        foreignField: "_id", // O campo na coleção de usuários
-                        as: "librarianInfo" // O nome do novo array com os dados do usuário
+                        from: "users",
+                        localField: "createdBy",
+                        foreignField: "_id",
+                        as: "librarianInfo"
                     }
                 },
-                // Estágio 2: "Desconstruir" o array para facilitar o acesso
+                // 2º JOIN: Junta o resultado com 'libraries' para pegar os dados da biblioteca
                 {
-                    $unwind: {
-                        path: "$librarianInfo",
-                        preserveNullAndEmptyArrays: true // Mantém livros mesmo se não tiverem bibliotecário
+                    $lookup: {
+                        from: "libraries",
+                        localField: "libraryId",
+                        foreignField: "_id",
+                        as: "libraryInfo"
                     }
                 },
-                // Estágio 3: Formatar a saída final
+                // Desconstrói os arrays resultantes para facilitar o acesso
+                { $unwind: { path: "$librarianInfo", preserveNullAndEmptyArrays: true } },
+                { $unwind: { path: "$libraryInfo", preserveNullAndEmptyArrays: true } },
+                // Formata o documento final que será enviado para a tela
                 {
                     $project: {
-                        // Mantém todos os campos originais do livro
                         title: 1,
                         author: 1,
                         bookpublisher: 1,
                         year: 1,
-                        quantity: 1,
                         price: 1,
+                        availableQuantity: { $subtract: [{ $toInt: "$quantity" }, "$qttReserved"] },
                         librarianName: "$librarianInfo.name",
-                        availableQuantity: {
-                            $subtract: [
-                                { $toInt: "$quantity" }, // Converte o campo quantity para inteiro
-                                "$qttReserved"
-                            ]
+                        // Aninha os dados da biblioteca em um objeto para facilitar o acesso
+                        library: {
+                            _id: "$libraryInfo._id",
+                            name: "$libraryInfo.name",
+                            address: "$libraryInfo.address"
                         }
                     }
                 },
-                // Estágio 4: Ordenar pelo título
-                {
-                    $sort: { title: 1 }
-                }
+                { $sort: { title: 1 } }
             ];
 
             const results = await client.aggregate(pipeline).toArray();
             return results;
-
         } catch (err) {
-            console.log(err);
+            console.error("Erro ao agregar livros com usuários e bibliotecas:", err);
+            throw err;
         }
     }
 

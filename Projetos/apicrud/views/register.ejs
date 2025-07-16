@@ -1,95 +1,87 @@
 <%- include('partials/header.ejs') %>
 
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <h2>Crie sua Conta</h2>
-        </div>
-        <div class="card-body">
-
-          <% if (typeof error !== 'undefined' && error) { %>
-            <div class="alert alert-danger" role="alert">
-              <%= error %>
-            </div>
-          <% } %>
-
-          <form action="/register" method="POST">
-            <div class="mb-3">
-              <label for="name" class="form-label">Nome Completo:</label>
-              <input type="text" class="form-control" id="name" name="name" placeholder="Digite seu nome completo" required>
-            </div>
-
-            <div class="mb-3">
-              <label for="email" class="form-label">E-mail:</label>
-              <input type="email" class="form-control" id="email" name="email" placeholder="exemplo@email.com" required>
-            </div>
-
-            <div class="mb-3">
-              <label for="passwordInput" class="form-label">Senha:</label>
-              <div class="input-group">
-                <input type="password" class="form-control" id="passwordInput" name="password" placeholder="Mínimo 8 caracteres" required>
-                <span class="input-group-text" style="cursor: pointer;">
-                  <i class="bi bi-eye-fill" id="togglePassword"></i>
-                </span>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="confirmPasswordInput" class="form-label">Confirmar Senha:</label>
-              <div class="input-group">
-                <input type="password" class="form-control" id="confirmPasswordInput" name="passwordConfirm" placeholder="Repita sua senha" required>
-                <span class="input-group-text" style="cursor: pointer;">
-                  <i class="bi bi-eye-fill" id="toggleConfirmPassword"></i>
-                </span>
-              </div>
-            </div>
-
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="checkbox" name="isLibrarian" id="isLibrarian">
-              <label class="form-check-label" for="isLibrarian">
-                Sou um bibliotecário
-              </label>
-            </div>
-
-            <hr>
-
-            <div class="d-grid">
-              <button type="submit" class="btn btn-primary">Cadastrar</button>
-            </div>
-          </form>
-
-          <div class="mt-3 text-center">
-            <p>Já tem uma conta? <a href="/login">Faça Login</a></p>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h2>Crie sua Conta</h2>
           </div>
+          <div class="card-body">
 
+            <% if (error_msg && error_msg.length> 0) { %>
+              <div class="alert alert-danger" role="alert">
+                <%= error_msg %>
+              </div>
+              <% } %>
+
+                <form action="/register" method="POST">
+                  <div class="mb-3">
+                    <label for="name" class="form-label">Nome Completo:</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Digite seu nome completo"
+                      required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="email" class="form-label">E-mail:</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="exemplo@email.com"
+                      required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="passwordInput" class="form-label">Senha:</label>
+                    <div class="input-group">
+                      <input type="password" class="form-control" id="passwordInput" name="password"
+                        placeholder="Mínimo 8 caracteres" required>
+                      <span class="input-group-text" style="cursor: pointer;"><i class="bi bi-eye-fill"
+                          id="togglePassword"></i></span>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="confirmPasswordInput" class="form-label">Confirmar Senha:</label>
+                    <div class="input-group">
+                      <input type="password" class="form-control" id="confirmPasswordInput" name="passwordConfirm"
+                        placeholder="Repita sua senha" required>
+                      <span class="input-group-text" style="cursor: pointer;"><i class="bi bi-eye-fill"
+                          id="toggleConfirmPassword"></i></span>
+                    </div>
+                  </div>
+
+                  <hr>
+
+                  <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="isLibrarian" id="isLibrarianCheckbox">
+                    <label class="form-check-label" for="isLibrarianCheckbox">
+                      Sou um bibliotecário (irei cadastrar ou me juntar a uma biblioteca)
+                    </label>
+                  </div>
+
+                  <hr>
+                  <div class="d-grid"><button type="submit" class="btn btn-primary">Cadastrar</button></div>
+                </form>
+
+                <div class="mt-3 text-center">
+                  <p>Já tem uma conta? <a href="/login">Faça Login</a></p>
+                </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-  function setupPasswordToggle(inputId, toggleId) {
-    const toggleElement = document.getElementById(toggleId);
-    const inputElement = document.getElementById(inputId);
-
-    if (toggleElement && inputElement) {
-      toggleElement.addEventListener('click', function () {
-        const type = inputElement.getAttribute('type') === 'password' ? 'text' : 'password';
-        inputElement.setAttribute('type', type);
-        this.classList.toggle('bi-eye-fill');
-        this.classList.toggle('bi-eye-slash-fill');
-      });
+  <script>
+    function setupPasswordToggle(inputId, toggleId) {
+      const toggleElement = document.getElementById(toggleId);
+      const inputElement = document.getElementById(inputId);
+      if (toggleElement && inputElement) {
+        toggleElement.addEventListener('click', function () {
+          const type = inputElement.getAttribute('type') === 'password' ? 'text' : 'password';
+          inputElement.setAttribute('type', type);
+          this.classList.toggle('bi-eye-fill');
+          this.classList.toggle('bi-eye-slash-fill');
+        });
+      }
     }
-  }
+    setupPasswordToggle('passwordInput', 'togglePassword');
+    setupPasswordToggle('confirmPasswordInput', 'toggleConfirmPassword');
+  </script>
 
-  // Configura o olhinho para o primeiro campo de senha
-  setupPasswordToggle('passwordInput', 'togglePassword');
-  
-  // Configura o olhinho para o segundo campo de senha
-  setupPasswordToggle('confirmPasswordInput', 'toggleConfirmPassword');
-</script>
-
-<%- include('partials/footer.ejs') %>
+  <%- include('partials/footer.ejs') %>
