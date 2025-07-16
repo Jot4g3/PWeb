@@ -23,6 +23,13 @@ class UsersDAO {
         }
     }
 
+    static async assignLibraryToUser(client, userId, libraryId) {
+        return await client.updateOne(
+            { _id: new ObjectId(userId) },
+            { $set: { libraryId: new ObjectId(libraryId) } }
+        );
+    }
+
 
     // static async getAllBooks(client) {
     //     try {

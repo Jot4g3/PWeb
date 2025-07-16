@@ -9,6 +9,7 @@ const { MongoClient, ObjectId } = require("mongodb");
 const BooksDAO = require("./dao/booksDAO");
 const UsersDAO = require("./dao/usersDAO");
 const ReservationsDAO = require("./dao/reservationsDAO");
+const LibrariesDAO = require("./dao/librariesDAO");
 
 const bcrypt = require("bcrypt");
 const session = require('express-session');
@@ -58,6 +59,15 @@ app.use((req, res, next) => {
     next();
 });
 
+// ===================================================
+// FUNÇÃO HELPER (Auxiliar)
+// ===================================================
+function generateAccessKey() {
+    const datePart = Date.now().toString().slice(-6)
+    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `BIBL-${datePart}-${randomPart}`;
+}
+
 // ============================================================
 // FUNÇÃO PRINCIPAL PARA CONECTAR AO BANCO E INICIAR O SERVIDOR
 // ============================================================
@@ -72,6 +82,7 @@ async function main() {
         const booksCollection = client.db('library').collection('books');
         const usersCollection = client.db('library').collection('users');
         const reservationsCollection = client.db('library').collection('reservations');
+        const librariesCollection = client.db('library').collection('libraries');
 
         // ===================================================
         // ROTAS
@@ -91,9 +102,7 @@ async function main() {
 
                 res.render('index', {
                     books: books,
-                    isLoggedIn: req.session.isLoggedIn || false, // Redundante!
-                    isLibrarian: req.session.isLibrarian || false, // Redundante!
-                    booksReserved: userReservations
+                    userReservations: userReservations
                 });
             } catch (err) {
                 console.log("Erro ao buscar livros para a página inicial:", err);
@@ -162,7 +171,7 @@ async function main() {
         });
 
         // CORREÇÃO: Rota de reserva única e completa
-        app.get('/books/reserve/:bookId', async (req, res) => {
+        app.post('/books/reserve/:bookId', async (req, res) => {
             if (!req.session.isLoggedIn) {
                 req.flash('error_msg', 'Você precisa fazer login para reservar um livro.');
                 return res.redirect('/login');
@@ -288,12 +297,7 @@ async function main() {
         app.post('/login', async (req, res) => {
             const { email, password } = req.body;
             const user = await UsersDAO.getUserByEmail(usersCollection, email);
-            if (!user) {
-                req.flash('error_msg', 'E-mail ou senha inválidos.');
-                return res.redirect('/login');
-            }
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
+            if (!user || !(await bcrypt.compare(password, user.password))) {
                 req.flash('error_msg', 'E-mail ou senha inválidos.');
                 return res.redirect('/login');
             }
@@ -302,6 +306,7 @@ async function main() {
             req.session.userId = user._id;
             req.session.userName = user.name;
             req.session.isLibrarian = user.isLibrarian;
+            req.session.libraryId = user.libraryId;
 
             res.redirect('/');
         });
@@ -325,59 +330,52 @@ async function main() {
         });
 
         app.post('/libraries/create', async (req, res) => {
-            // A verificação de login agora funciona, pois o usuário foi redirecionado para cá logado!
+            // 1. Validação: Garante que o usuário está logado
             if (!req.session.isLoggedIn) {
+                req.flash('error_msg', 'Você precisa estar logado para criar uma biblioteca.');
                 return res.redirect('/login');
             }
 
             try {
-                const libraryData = req.body; // nome, endereço, etc.
+                // 2. Pega os dados do formulário e da sessão
+                const libraryData = req.body;
                 const userId = req.session.userId;
 
-                // [Lógica para geocodificação e para gerar um accessKey aqui...]
-                const accessKey = `BIBL-${Date.now()}`; // Exemplo simples de chave de acesso
+                // 3. Geração do Código de Acesso
+                const accessKey = generateAccessKey();
 
-                // Assumindo que você já tem essas variáveis na sua rota POST /libraries/create:
-                // const libraryData = req.body;
-                // const coords = await getCoordsForAddress(libraryData.street + ', ' + libraryData.city);
-                // const accessKey = `BIBL-${Date.now()}`;
-
+                // 4. Monta o documento final para salvar no banco
                 const newLibraryDoc = {
                     name: libraryData.name,
                     address: {
                         street: libraryData.street,
                         city: libraryData.city,
                         state: libraryData.state,
-                        zipCode: libraryData.zipCode,
-                        // Dados que viriam da API de geocodificação
-                        latitude: coords ? coords.latitude : null,
-                        longitude: coords ? coords.longitude : null
+                        zipCode: libraryData.zipCode
                     },
-                    // Chave de acesso gerada
                     accessKey: accessKey,
-
-                    // Outros campos do formulário (sugestões)
-                    phoneNumber: libraryData.phoneNumber || '', // Usa string vazia se não for fornecido
-                    openingHours: libraryData.openingHours || 'Não informado', // Usa um padrão se não for fornecido
+                    phoneNumber: libraryData.phoneNumber || '',
+                    openingHours: libraryData.openingHours || 'Não informado',
                     website: libraryData.website || '',
-                    imageUrl: libraryData.imageUrl || '' // Pode ser um link para uma imagem padrão
+                    imageUrl: libraryData.imageUrl || ''
                 };
 
-                // 1. Cria a biblioteca
+                // 5. Salva a nova biblioteca e associa ao usuário
                 const result = await LibrariesDAO.createLibrary(librariesCollection, newLibraryDoc);
                 const newLibraryId = result.insertedId;
 
-                // 2. ATUALIZA o documento do usuário que a criou com o ID da nova biblioteca
                 await UsersDAO.assignLibraryToUser(usersCollection, userId, newLibraryId);
 
-                // 3. ATUALIZA a sessão do usuário com o ID da nova biblioteca
+                // 6. Atualiza a sessão e redireciona com mensagem de sucesso
                 req.session.libraryId = newLibraryId;
-
-                req.flash('success_msg', `Biblioteca "${newLibraryDoc.name}" criada! Seu código de acesso para outros bibliotecários é: ${accessKey}. Lembre-se de guardar esse código para que novos bibliotecários possam ser associados a essa biblioteca.`);
+                req.flash('success_msg', `Biblioteca "${newLibraryDoc.name}" criada! O código de acesso é: ${accessKey}`);
                 res.redirect('/');
 
             } catch (err) {
-                // ... tratamento de erro
+                // 7. Tratamento de Erro
+                console.error("Erro ao criar biblioteca:", err);
+                req.flash('error_msg', 'Não foi possível criar a biblioteca. Tente novamente.');
+                res.redirect('/libraries/new');
             }
         });
 
