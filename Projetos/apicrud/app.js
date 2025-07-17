@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public')); // Para servir arquivos estáticos como CSS, se necessário
 
 app.use(session({
-    secret: secretSession, // Ótimo que você já está usando uma variável para isso!
+    secret: secretSession,
     resave: false,
     saveUninitialized: false,
 
@@ -170,6 +170,7 @@ async function main() {
             res.redirect(`/`);
         });
 
+        //Permitir editar apenas se for bibliotecário da biblioteca que postou o livro!!!
         app.get("/books/update/:id", async (req, res) => {
             if (!req.session.isLibrarian) return res.redirect('/');
             const book = await BooksDAO.getBookById(booksCollection, req.params.id);
@@ -178,20 +179,41 @@ async function main() {
 
         app.post("/books/update/:id", async (req, res) => {
             if (!req.session.isLibrarian) return res.redirect('/');
+
             const id = req.params.id;
             const book = req.body;
-            // CORREÇÃO: Lógica de update segura para não apagar campos existentes
-            const doc = {
-                title: book.title,
-                author: book.author,
-                bookpublisher: book.bookpublisher,
-                year: parseInt(book.year),
-                quantity: parseInt(book.quantity),
-                price: parseFloat(book.price),
-            };
-            await BooksDAO.updateBookById(booksCollection, id, doc);
-            req.flash('success_msg', 'Livro atualizado com sucesso.');
-            res.redirect("/");
+ 
+            if(book.libraryId != UsersDAO.getUserById(usersCollection, req.session.userId).libraryId){
+                req.flash('error_msg', 'Você não pode editar este livro porque não é bibliotecário desta biblioteca');
+            }
+
+            if (!book.title || !book.author || !book.bookpublisher || !book.year || !book.quantity || !book.price) {
+                req.flash('error_msg', 'Preencha os campos corretamente.');
+                return res.redirect("/");
+            }
+            else if (parseInt(book.quantity) < 0) {
+                req.flash('error_msg', 'Não é permitido que a quantidade de livros seja negativa.');
+                return res.redirect("/");
+            }
+            else {
+                try {
+                    // CORREÇÃO: Lógica de update segura para não apagar campos existentes
+                    const doc = {
+                        title: book.title,
+                        author: book.author,
+                        bookpublisher: book.bookpublisher,
+                        year: parseInt(book.year),
+                        quantity: parseInt(book.quantity),
+                        price: parseFloat(book.price),
+                    };
+                    await BooksDAO.updateBookById(booksCollection, id, doc);
+                } catch (err) {
+                    console.log(err)
+                } finally {
+                    req.flash('success_msg', 'Livro atualizado com sucesso.');
+                    res.redirect("/");
+                }
+            }
         });
 
         // CORREÇÃO: Rota de reserva única e completa
@@ -208,6 +230,8 @@ async function main() {
                 if (existingReservation) {
                     try {
                         await ReservationsDAO.deleteReservation(reservationsCollection, req.params.bookId, req.session.userId)
+                        // Incrementando a quantidade de livros reservados.
+                        await BooksDAO.updateBookById(booksCollection, bookId, { qttReserved: book.qttReserved - 1 });
                         req.flash('success_msg', 'A reserva foi cancelada!');
                     } catch (err) {
                         console.log(err)

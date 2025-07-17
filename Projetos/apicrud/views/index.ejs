@@ -148,12 +148,15 @@
                         </form>
                         <% } %>
 
-                          <% if (session.isLoggedIn && session.isLibrarian) { %>
-                            <a href="/books/update/<%= book._id %>" class="btn btn-primary btn-sm">Editar</a>
-                            <form action="/books/delete/<%= book._id %>" method="post" style="display:inline;">
-                              <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                            </form>
-                            <% } %>
+                          <%# Para que apenas usuários com devido acesso possam editar/deletar livros. %>
+                          <% const isBookManager = session.isLibrarian && session.libraryId && book.library?._id && session.libraryId.toString() === book.library._id.toString(); %>  
+
+                            <% if (session.isLoggedIn && isBookManager) { %>
+                              <a href="/books/update/<%= book._id %>" class="btn btn-primary btn-sm">Editar</a>
+                              <form action="/books/delete/<%= book._id %>" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                              </form>
+                              <% } %>
 
                     </div>
 
