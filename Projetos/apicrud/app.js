@@ -174,7 +174,7 @@ async function main() {
         app.get("/books/update/:id", async (req, res) => {
             if (!req.session.isLibrarian) return res.redirect('/');
             const book = await BooksDAO.getBookById(booksCollection, req.params.id);
-            res.render("editbook.ejs", { book: book });
+            res.render("edit-book.ejs", { book: book });
         });
 
         app.post("/books/update/:id", async (req, res) => {
@@ -182,8 +182,8 @@ async function main() {
 
             const id = req.params.id;
             const book = req.body;
- 
-            if(book.libraryId != UsersDAO.getUserById(usersCollection, req.session.userId).libraryId){
+
+            if (book.libraryId != UsersDAO.getUserById(usersCollection, req.session.userId).libraryId) {
                 req.flash('error_msg', 'Você não pode editar este livro porque não é bibliotecário desta biblioteca');
             }
 
@@ -476,6 +476,7 @@ async function main() {
             res.render('library-onboarding.ejs');
         });
 
+        // ROTA PARA REALIZAR CRIAÇÃO DE NOVA BIBLIOTECA
         app.post('/libraries/create', async (req, res) => {
             // 1. Validação: Garante que o usuário está logado
             if (!req.session.isLoggedIn) {
@@ -633,6 +634,82 @@ async function main() {
                 console.error("Erro ao carregar perfil da biblioteca:", err);
                 req.flash('error_msg', 'Não foi possível carregar a página da biblioteca.');
                 res.redirect('/');
+            }
+        });
+
+        // ROTA PARA EDITAR INFORMAÇÕES DA BIBLIOTECA
+        app.get('/libraries/edit/:id', async (req, res) => {
+            try {
+                const libraryId = req.params.id;
+                const session = req.session;
+
+                if (!session.isLoggedIn) {
+                    req.flash('error_msg', 'Você precisa estar logado para editar uma biblioteca.');
+                    return res.redirect('/login');
+                }
+
+                if (!session.isLibrarian || session.libraryId?.toString() !== libraryId) {
+                    req.flash('error_msg', 'Você não tem permissão para editar esta biblioteca.');
+                    return res.redirect('/');
+                }
+
+                const library = await LibrariesDAO.getLibraryById(librariesCollection, libraryId);
+
+                if (!library) {
+                    req.flash('error_msg', 'Biblioteca não encontrada.');
+                    return res.redirect('/');
+                }
+
+                res.render('edit-library', {
+                    library: library
+                })
+            } catch (err) {
+                console.log("Erro ao carregar a página de edição da biblioteca: ", err);
+                req.flash('error_msg', "Ocorreu um erro.");
+                res.redirect("/")
+            }
+        });
+
+        // ROTA PARA PROCESSAR A ATUALIZAÇÃO DA BIBLIOTECA
+        app.post('/libraries/update/:id', async (req, res) => {
+            try {
+                const libraryId = req.params.id;
+                const session = req.session;
+                const libraryData = req.body;
+
+                if (!session.isLoggedIn) {
+                    req.flash('error_msg', 'Você precisa estar logado para editar uma biblioteca.');
+                    return res.redirect('/login');
+                }
+
+                if (!session.isLibrarian || session.libraryId?.toString() !== libraryId) {
+                    req.flash('error_msg', 'Ação não autorizada.');
+                    return res.redirect('/');
+                }
+
+                // Monta o objeto com os dados que podem ser atualizados
+                const doc = {
+                    name: libraryData.name,
+                    address: {
+                        street: libraryData.street,
+                        city: libraryData.city,
+                        state: libraryData.state,
+                        zipCode: libraryData.zipCode
+                    },
+                    phoneNumber: libraryData.phoneNumber,
+                    website: libraryData.website,
+                    openingHours: libraryData.openingHours
+                };
+
+                await LibrariesDAO.updateLibraryById(librariesCollection, libraryId, doc);
+
+                req.flash('success_msg', 'Informações da biblioteca atualizadas com sucesso!');
+                res.redirect(`/libraries/${libraryId}`); // Redireciona de volta para o perfil da biblioteca
+
+            } catch (err) {
+                console.log("Erro ao atualizar biblioteca:", err);
+                req.flash('error_msg', 'Não foi possível atualizar as informações.');
+                res.redirect(`/libraries/edit/${libraryId}`);
             }
         });
 

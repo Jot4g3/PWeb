@@ -82,6 +82,18 @@ class LibrariesDAO {
             throw err;
         }
     }
+
+    static async updateLibraryById(client, id, libraryData) {
+        try {
+            return await client.updateOne(
+                { _id: new ObjectId(id) },
+                { $set: libraryData }
+            );
+        } catch (err) {
+            console.error("Erro ao atualizar biblioteca por ID:", err);
+            throw err;
+        }
+    }
 }
 
 module.exports = LibrariesDAO;

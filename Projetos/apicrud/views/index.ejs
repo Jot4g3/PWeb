@@ -122,12 +122,12 @@
                                 googleMapsUrl='https://www.google.com/maps/search/?api=1&query=' +
                                 encodeURIComponent(fullAddress); %>
 
-                                <a href="/libraries/<%= book.library._id %>" class="text-decoration-none">
+                                <a href="/libraries/<%= book.library._id %>" class="text-decoration-none" title="Ver perfil da Biblioteca">
                                   <%= book.library.name %>
                                 </a>
 
                                 <a href="<%= googleMapsUrl %>" target="_blank" rel="noopener noreferrer" class="ms-2"
-                                  title="Ver no mapa">
+                                  title="Ver localização no mapa">
                                   <i class="bi bi-geo-alt-fill"></i>
                                 </a>
 
