@@ -28,7 +28,7 @@ const secretSession = process.env.secretSession
 // ===================================================
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public')); // Para servir arquivos estáticos como CSS, se necessário
+app.use(express.static('assets'));
 
 app.use(session({
     secret: secretSession,
